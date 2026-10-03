@@ -83,6 +83,13 @@ export function StatCard({
   );
 }
 
+// Öğrenci listelerinde sıralama: Aktif üstte, Pasif en altta.
+export const studentStatusOrder: Record<string, number> = {
+  Aktif: 0,
+  Bekleyen: 1,
+  Pasif: 2,
+};
+
 const badgeTones: Record<string, string> = {
   Aktif: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15",
   Bekleyen: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/15",

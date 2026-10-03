@@ -10,6 +10,7 @@ import {
   SummaryButton,
   inputClass,
   labelClass,
+  studentStatusOrder,
 } from "@/components/ui";
 import { CourseChip, CourseIcon } from "@/lib/course-icons";
 import {
@@ -34,7 +35,7 @@ export default async function StudentsPage({
 }) {
   const { status, q } = await searchParams;
 
-  const [students, courses, groups] = await Promise.all([
+  const [studentsRaw, courses, groups] = await Promise.all([
     prisma.student.findMany({
       where: {
         status: status && status !== "all" ? status : undefined,
@@ -53,6 +54,10 @@ export default async function StudentsPage({
     prisma.course.findMany({ orderBy: { name: "asc" } }),
     prisma.group.findMany({ orderBy: { name: "asc" } }),
   ]);
+
+  const students = [...studentsRaw].sort(
+    (a, b) => studentStatusOrder[a.status] - studentStatusOrder[b.status]
+  );
 
   const filters = [
     { key: "all", label: "Tümü" },

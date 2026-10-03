@@ -1,7 +1,16 @@
 import Link from "next/link";
 import { Banknote, CircleDollarSign, TrendingUp, Wallet } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { Badge, Card, EmptyState, PageHeader, StatCard, Table, Th } from "@/components/ui";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  PageHeader,
+  StatCard,
+  Table,
+  Th,
+  studentStatusOrder,
+} from "@/components/ui";
 import { AddInstallmentButton, EditableInstallmentCell } from "./editable-cell";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +20,14 @@ function formatTL(n: number) {
 }
 
 export default async function PaymentsPage() {
-  const students = await prisma.student.findMany({
+  const studentsRaw = await prisma.student.findMany({
     include: { installments: { orderBy: { index: "asc" } } },
     orderBy: { createdAt: "asc" },
   });
+
+  const students = [...studentsRaw].sort(
+    (a, b) => studentStatusOrder[a.status] - studentStatusOrder[b.status]
+  );
 
   const all = students.flatMap((s) => s.installments);
   const totals = {
