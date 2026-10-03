@@ -8,10 +8,12 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+// role: "admin" | "teacher"
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String
+  role         String   @default("admin")
   createdAt    DateTime @default(now())
 }
 

@@ -8,8 +8,8 @@ function getSecret() {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSessionToken(userId: string) {
-  return await new SignJWT({ sub: userId })
+export async function createSessionToken(userId: string, role: string) {
+  return await new SignJWT({ sub: userId, role })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")

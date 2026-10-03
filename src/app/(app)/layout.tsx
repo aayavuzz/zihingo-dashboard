@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/nav-link";
 import { logout } from "@/app/login/actions";
+import { getSession } from "@/lib/session";
 
 const iconProps = { size: 17, strokeWidth: 2 };
 const navItems = [
@@ -19,10 +20,13 @@ const navItems = [
   { href: "/courses", label: "Kurlar", icon: <Layers {...iconProps} /> },
   { href: "/payments", label: "Ödemeler", icon: <CreditCard {...iconProps} /> },
   { href: "/schedule", label: "Haftalık Program", icon: <CalendarDays {...iconProps} /> },
-  { href: "/teachers", label: "Öğretmenler", icon: <Users {...iconProps} /> },
+  { href: "/teachers", label: "Öğretmenler", icon: <Users {...iconProps} />, adminOnly: true },
 ];
 
-export default function AppLayout({ children }: LayoutProps<"/">) {
+export default async function AppLayout({ children }: LayoutProps<"/">) {
+  const session = await getSession();
+  const visibleNavItems = navItems.filter((item) => !item.adminOnly || session?.role !== "teacher");
+
   return (
     <div className="min-h-full flex bg-slate-100 text-slate-900">
       <aside className="w-64 shrink-0 border-r border-slate-200/80 bg-white min-h-screen flex flex-col">
@@ -35,7 +39,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           </div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
           ))}
         </nav>

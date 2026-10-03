@@ -17,7 +17,7 @@ export async function login(formData: FormData) {
     redirect("/login?error=1");
   }
 
-  const token = await createSessionToken(user.id);
+  const token = await createSessionToken(user.id, user.role);
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
