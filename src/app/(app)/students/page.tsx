@@ -73,11 +73,11 @@ export default async function StudentsPage({
             </summary>
             <Card className="absolute right-0 mt-2 w-96 p-4 z-10">
               <form action={createStudent} className="space-y-3">
-                <div className="grid grid-cols-5 gap-2">
-                  <div>
-                    <label className={labelClass}>Ad Soyad *</label>
-                    <input name="name" required className={inputClass} />
-                  </div>
+                <div>
+                  <label className={labelClass}>Ad Soyad *</label>
+                  <input name="name" required className={inputClass} />
+                </div>
+                <div className="grid grid-cols-4 gap-2">
                   <div>
                     <label className={labelClass}>Durum</label>
                     <select name="status" className={inputClass} defaultValue="Aktif">
