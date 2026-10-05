@@ -28,15 +28,12 @@ export default async function DashboardPage() {
       }),
       prisma.teacher.findMany({
         orderBy: { name: "asc" },
-        include: { lessons: { select: { fee: true, paid: true } } },
+        include: { _count: { select: { lessons: true } } },
       }),
     ]);
 
-  const teacherRows = teachers.map((t) => ({
-    ...t,
-    paidTotal: t.lessons.filter((l) => l.paid).reduce((a, l) => a + l.fee, 0),
-  }));
-  const maxPaidTotal = Math.max(...teacherRows.map((t) => t.paidTotal), 1);
+  const teacherRows = teachers.map((t) => ({ ...t, lessonCount: t._count.lessons }));
+  const maxLessonCount = Math.max(...teacherRows.map((t) => t.lessonCount), 1);
 
   const courseRows = courses.map((c) => ({
     id: c.id,
@@ -102,18 +99,14 @@ export default async function DashboardPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-slate-800 truncate">{t.name}</div>
-                    <div className="text-xs text-slate-400">
-                      {t.rate.toLocaleString("tr-TR")}₺{" "}
-                      {t.rateType === "PerHour" ? "/ saat" : "/ ders"}
-                    </div>
                   </div>
                   <div
                     className="w-20 h-1.5 rounded-full bg-slate-100 overflow-hidden shrink-0"
-                    title="Toplam ödenen (göreli)"
+                    title="Toplam işlenen ders sayısı (göreli)"
                   >
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-brand-300 to-brand-600"
-                      style={{ width: `${(t.paidTotal / maxPaidTotal) * 100}%` }}
+                      style={{ width: `${(t.lessonCount / maxLessonCount) * 100}%` }}
                     />
                   </div>
                 </Link>
