@@ -109,6 +109,9 @@ export default async function DashboardPage() {
                       style={{ width: `${(t.lessonCount / maxLessonCount) * 100}%` }}
                     />
                   </div>
+                  <div className="text-xs font-semibold text-slate-500 w-6 text-right shrink-0">
+                    {t.lessonCount}
+                  </div>
                 </Link>
               ))}
             </div>
