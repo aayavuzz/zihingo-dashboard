@@ -32,6 +32,12 @@ export default async function DashboardPage() {
       }),
     ]);
 
+  const teacherRows = teachers.map((t) => ({
+    ...t,
+    paidTotal: t.lessons.filter((l) => l.paid).reduce((a, l) => a + l.fee, 0),
+  }));
+  const maxPaidTotal = Math.max(...teacherRows.map((t) => t.paidTotal), 1);
+
   const courseRows = courses.map((c) => ({
     id: c.id,
     name: c.name,
@@ -88,33 +94,30 @@ export default async function DashboardPage() {
             <EmptyState text="Henüz öğretmen eklenmedi." />
           ) : (
             <div className="space-y-1">
-              {teachers.map((t) => {
-                const unpaid = t.lessons
-                  .filter((l) => !l.paid)
-                  .reduce((a, l) => a + l.fee, 0);
-                return (
-                  <Link
-                    key={t.id}
-                    href={`/teachers/${t.id}`}
-                    className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-slate-800 truncate">
-                        {t.name}
-                      </div>
-                      <div className="text-xs text-slate-400">
-                        {t.rate.toLocaleString("tr-TR")}₺{" "}
-                        {t.rateType === "PerHour" ? "/ saat" : "/ ders"}
-                      </div>
+              {teacherRows.map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/teachers/${t.id}`}
+                  className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-slate-800 truncate">{t.name}</div>
+                    <div className="text-xs text-slate-400">
+                      {t.rate.toLocaleString("tr-TR")}₺{" "}
+                      {t.rateType === "PerHour" ? "/ saat" : "/ ders"}
                     </div>
-                    {unpaid > 0 && (
-                      <div className="text-xs font-semibold text-rose-600 shrink-0">
-                        {unpaid.toLocaleString("tr-TR")}₺ bekliyor
-                      </div>
-                    )}
-                  </Link>
-                );
-              })}
+                  </div>
+                  <div
+                    className="w-20 h-1.5 rounded-full bg-slate-100 overflow-hidden shrink-0"
+                    title="Toplam ödenen (göreli)"
+                  >
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-brand-300 to-brand-600"
+                      style={{ width: `${(t.paidTotal / maxPaidTotal) * 100}%` }}
+                    />
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </Card>
