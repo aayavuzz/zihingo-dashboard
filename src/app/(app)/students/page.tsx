@@ -83,33 +83,37 @@ export default async function StudentsPage({
                   <label className={labelClass}>Ad Soyad *</label>
                   <input name="name" required className={inputClass} />
                 </div>
-                <div className="grid grid-cols-4 gap-2">
-                  <div>
-                    <label className={labelClass}>Durum</label>
-                    <select name="status" className={inputClass} defaultValue="Aktif">
-                      <option value="Aktif">Aktif</option>
-                      <option value="Bekleyen">Bekleyen</option>
-                      <option value="Pasif">Pasif</option>
-                    </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
+                    <div>
+                      <label className={labelClass}>Durum</label>
+                      <select name="status" className={inputClass} defaultValue="Aktif">
+                        <option value="Aktif">Aktif</option>
+                        <option value="Bekleyen">Bekleyen</option>
+                        <option value="Pasif">Pasif</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Grup</label>
+                      <select name="groupId" className={inputClass} defaultValue="">
+                        <option value="">— Grup yok —</option>
+                        {groups.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            {g.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className={labelClass}>Sınıf</label>
-                    <input name="grade" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Yaş</label>
-                    <input name="age" type="number" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Grup</label>
-                    <select name="groupId" className={inputClass} defaultValue="">
-                      <option value="">— Grup yok —</option>
-                      {groups.map((g) => (
-                        <option key={g.id} value={g.id}>
-                          {g.name}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="space-y-2">
+                    <div>
+                      <label className={labelClass}>Sınıf</label>
+                      <input name="grade" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Yaş</label>
+                      <input name="age" type="number" className={inputClass} />
+                    </div>
                   </div>
                 </div>
                 <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
