@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDown, X } from "lucide-react";
+import { Baby, ChevronDown, X } from "lucide-react";
 import { prisma } from "@/lib/db";
 import {
   Badge,
@@ -31,15 +31,16 @@ const rowCols =
 export default async function StudentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; preschool?: string }>;
 }) {
-  const { status, q } = await searchParams;
+  const { status, q, preschool } = await searchParams;
 
   const [studentsRaw, courses, groups] = await Promise.all([
     prisma.student.findMany({
       where: {
         status: status && status !== "all" ? status : undefined,
         name: q ? { contains: q } : undefined,
+        isPreschool: preschool === "1" ? true : undefined,
       },
       orderBy: { createdAt: "asc" },
       include: {
@@ -111,6 +112,17 @@ export default async function StudentsPage({
                     </select>
                   </div>
                 </div>
+                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="isPreschool"
+                    className="rounded border-slate-300 text-pink-500 focus:ring-pink-400"
+                  />
+                  <span className="inline-flex items-center gap-1">
+                    <Baby size={13} className="text-pink-500" />
+                    Okul Öncesi öğrencisi
+                  </span>
+                </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass}>Başlangıç Tarihi</label>
@@ -152,7 +164,7 @@ export default async function StudentsPage({
           {filters.map((f) => (
             <Link
               key={f.key}
-              href={`/students?status=${f.key}`}
+              href={`/students?status=${f.key}${preschool === "1" ? "&preschool=1" : ""}`}
               className={`text-xs font-medium px-3 py-1.5 rounded-full border ${
                 (status ?? "all") === f.key
                   ? "bg-brand-600 text-white border-brand-600"
@@ -162,9 +174,21 @@ export default async function StudentsPage({
               {f.label}
             </Link>
           ))}
+          <Link
+            href={`/students?status=${status ?? "all"}${preschool === "1" ? "" : "&preschool=1"}`}
+            className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border ${
+              preschool === "1"
+                ? "bg-gradient-to-r from-pink-500 via-purple-500 to-amber-500 text-white border-transparent"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            <Baby size={13} />
+            Okul Öncesi
+          </Link>
         </div>
         <form className="flex-1">
           <input type="hidden" name="status" value={status ?? "all"} />
+          {preschool === "1" && <input type="hidden" name="preschool" value="1" />}
           <input
             name="q"
             defaultValue={q}
@@ -206,7 +230,22 @@ export default async function StudentsPage({
                   <summary
                     className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors`}
                   >
-                    <span className="font-medium text-slate-800 truncate">{s.name}</span>
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      {s.isPreschool && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
+                          <Baby size={12} />
+                        </span>
+                      )}
+                      <span
+                        className={`font-medium truncate ${
+                          s.isPreschool
+                            ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
+                            : "text-slate-800"
+                        }`}
+                      >
+                        {s.name}
+                      </span>
+                    </span>
                     <span>
                       <Badge value={s.status} />
                     </span>
@@ -372,6 +411,20 @@ export default async function StudentsPage({
                             defaultValue={s.age ?? ""}
                             className={inputClass}
                           />
+                        </div>
+                        <div className="col-span-2 sm:col-span-5 flex items-center">
+                          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              name="isPreschool"
+                              defaultChecked={s.isPreschool}
+                              className="rounded border-slate-300 text-pink-500 focus:ring-pink-400"
+                            />
+                            <span className="inline-flex items-center gap-1">
+                              <Baby size={13} className="text-pink-500" />
+                              Okul Öncesi öğrencisi
+                            </span>
+                          </label>
                         </div>
                         <div>
                           <label className={labelClass}>Grup</label>

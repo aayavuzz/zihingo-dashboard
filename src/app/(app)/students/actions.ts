@@ -31,6 +31,7 @@ export async function createStudent(formData: FormData) {
       birthday: str(formData, "birthday"),
       parentName: str(formData, "parentName"),
       parentPhone: str(formData, "parentPhone"),
+      isPreschool: str(formData, "isPreschool") === "on",
       note: str(formData, "note"),
     },
   });
@@ -56,6 +57,7 @@ export async function updateStudent(id: string, formData: FormData) {
       birthday: str(formData, "birthday"),
       parentName: str(formData, "parentName") ?? null,
       parentPhone: str(formData, "parentPhone") ?? null,
+      isPreschool: str(formData, "isPreschool") === "on",
       note: str(formData, "note"),
     },
   });

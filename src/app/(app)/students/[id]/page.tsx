@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Baby } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import {
@@ -131,6 +132,18 @@ export default async function StudentDetailPage({
                 </select>
               </div>
             </div>
+            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+              <input
+                type="checkbox"
+                name="isPreschool"
+                defaultChecked={student.isPreschool}
+                className="rounded border-slate-300 text-pink-500 focus:ring-pink-400"
+              />
+              <span className="inline-flex items-center gap-1">
+                <Baby size={13} className="text-pink-500" />
+                Okul Öncesi öğrencisi
+              </span>
+            </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Başlangıç Tarihi</label>
