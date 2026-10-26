@@ -3,6 +3,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { Button, Card, inputClass, labelClass } from "@/components/ui";
 import { CourseIcon } from "@/lib/course-icons";
+import { GroupMultiSelect } from "@/components/group-multi-select";
 import {
   MONTHS_TR,
   WEEKDAYS_SHORT_TR,
@@ -321,26 +322,7 @@ function AddSessionForm({
             (birden fazla seçilebilir — her grup için ayrı ders oluşturulur)
           </span>
         </label>
-        <div className="flex flex-wrap gap-1.5 p-2 rounded-lg border border-slate-300 max-h-32 overflow-y-auto">
-          {groups.length === 0 ? (
-            <span className="text-xs text-slate-400">Henüz grup yok.</span>
-          ) : (
-            groups.map((g) => (
-              <label
-                key={g.id}
-                className="flex items-center gap-1.5 text-xs bg-slate-50 px-2 py-1 rounded-md cursor-pointer hover:bg-slate-100 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700"
-              >
-                <input
-                  type="checkbox"
-                  name="groupId"
-                  value={g.id}
-                  className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-                />
-                {g.name}
-              </label>
-            ))
-          )}
-        </div>
+        <GroupMultiSelect groups={groups} />
       </div>
       <div>
         <label className={labelClass}>Ders Türü: Öğrenci (Bireysel Ders)</label>
