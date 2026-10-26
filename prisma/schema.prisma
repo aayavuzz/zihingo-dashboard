@@ -110,6 +110,7 @@ model ScheduleSession {
   group       Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
   courseId    String?
   course      Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  kurNo       Int? // Kursun hangi kuru/aşaması işleniyor (1-4)
   teacherId   String?
   teacher     Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
   durationHrs Float    @default(1)

@@ -228,6 +228,7 @@ type SessionWithRel = {
   group: Group | null;
   courseId: string | null;
   course: CourseOpt | null;
+  kurNo: number | null;
   teacherId: string | null;
   teacher: Teacher | null;
   durationHrs: number;
@@ -267,6 +268,19 @@ function CourseSelect({
       {courses.map((c) => (
         <option key={c.id} value={c.id}>
           {c.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function KurSelect({ defaultValue = "" }: { defaultValue?: string | number }) {
+  return (
+    <select name="kurNo" className={inputClass} defaultValue={String(defaultValue)}>
+      <option value="">— Kur seçilmedi —</option>
+      {[1, 2, 3, 4].map((n) => (
+        <option key={n} value={n}>
+          {n}. Kur
         </option>
       ))}
     </select>
@@ -335,9 +349,15 @@ function AddSessionForm({
         <label className={labelClass}>Başlık</label>
         <input name="title" placeholder="Örn: Deneme Dersi" className={inputClass} />
       </div>
-      <div>
-        <label className={labelClass}>Kurs</label>
-        <CourseSelect courses={courses} />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={labelClass}>Kurs</label>
+          <CourseSelect courses={courses} />
+        </div>
+        <div>
+          <label className={labelClass}>Kur</label>
+          <KurSelect />
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -440,9 +460,15 @@ function SessionEditForm({
           <label className={labelClass}>Mevcut Başlık</label>
           <input name="title" defaultValue={session.title} className={inputClass} />
         </div>
-        <div>
-          <label className={labelClass}>Kurs</label>
-          <CourseSelect courses={courses} defaultValue={session.courseId ?? ""} />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Kurs</label>
+            <CourseSelect courses={courses} defaultValue={session.courseId ?? ""} />
+          </div>
+          <div>
+            <label className={labelClass}>Kur</label>
+            <KurSelect defaultValue={session.kurNo ?? ""} />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -527,6 +553,7 @@ function SessionPopoverBody({
           >
             <CourseIcon name={session.course.icon} size={11} />
             {session.course.name}
+            {session.kurNo && ` · ${session.kurNo}. Kur`}
           </span>
         )}
       </div>
