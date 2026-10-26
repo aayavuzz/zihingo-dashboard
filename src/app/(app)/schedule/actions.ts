@@ -40,26 +40,34 @@ function dayFromDateStr(dateStr: string) {
 export async function createSession(formData: FormData) {
   const date = str(formData, "date");
   const time = str(formData, "time");
-  const groupId = str(formData, "groupId");
-  const title = await resolveTitle(formData, groupId);
   const recurring = str(formData, "recurring") === "on";
 
   if (!date || !time) throw new Error("Tarih ve saat zorunludur");
 
-  await prisma.scheduleSession.create({
-    data: {
-      date,
-      day: dayFromDateStr(date),
-      time,
-      recurring,
-      title,
-      groupId,
-      courseId: str(formData, "courseId"),
-      teacherId: str(formData, "teacherId"),
-      durationHrs: num(formData, "durationHrs") ?? 1,
-      note: str(formData, "note"),
-    },
-  });
+  const baseData = {
+    date,
+    day: dayFromDateStr(date),
+    time,
+    recurring,
+    courseId: str(formData, "courseId"),
+    teacherId: str(formData, "teacherId"),
+    durationHrs: num(formData, "durationHrs") ?? 1,
+    note: str(formData, "note"),
+  };
+
+  // Birden fazla grup seçilmişse, her biri için ayrı bir ders oluştur —
+  // aynı ders saatinde 2-3 grup aynı anda girilebilsin diye.
+  const groupIds = formData.getAll("groupId").map(String).filter(Boolean);
+
+  if (groupIds.length > 0) {
+    for (const groupId of groupIds) {
+      const title = await resolveTitle(formData, groupId);
+      await prisma.scheduleSession.create({ data: { ...baseData, title, groupId } });
+    }
+  } else {
+    const title = await resolveTitle(formData, undefined);
+    await prisma.scheduleSession.create({ data: { ...baseData, title } });
+  }
 
   revalidatePath("/schedule");
 }

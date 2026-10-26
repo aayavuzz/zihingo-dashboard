@@ -315,15 +315,32 @@ function AddSessionForm({
         Her hafta bu günde tekrarla (haftalık ders)
       </label>
       <div>
-        <label className={labelClass}>Ders Türü: Grup</label>
-        <select name="groupId" className={inputClass} defaultValue="">
-          <option value="">— Grup dersi değil —</option>
-          {groups.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </select>
+        <label className={labelClass}>
+          Ders Türü: Grup{" "}
+          <span className="text-slate-400 font-normal normal-case">
+            (birden fazla seçilebilir — her grup için ayrı ders oluşturulur)
+          </span>
+        </label>
+        <div className="flex flex-wrap gap-1.5 p-2 rounded-lg border border-slate-300 max-h-32 overflow-y-auto">
+          {groups.length === 0 ? (
+            <span className="text-xs text-slate-400">Henüz grup yok.</span>
+          ) : (
+            groups.map((g) => (
+              <label
+                key={g.id}
+                className="flex items-center gap-1.5 text-xs bg-slate-50 px-2 py-1 rounded-md cursor-pointer hover:bg-slate-100 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700"
+              >
+                <input
+                  type="checkbox"
+                  name="groupId"
+                  value={g.id}
+                  className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                />
+                {g.name}
+              </label>
+            ))
+          )}
+        </div>
       </div>
       <div>
         <label className={labelClass}>Ders Türü: Öğrenci (Bireysel Ders)</label>
