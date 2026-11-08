@@ -80,6 +80,15 @@ export async function addLesson(teacherId: string, formData: FormData) {
   revalidatePath("/teachers");
 }
 
+export async function updateLessonFee(lessonId: string, teacherId: string, formData: FormData) {
+  const fee = num(formData, "fee");
+  if (fee === undefined) return;
+
+  await prisma.lesson.update({ where: { id: lessonId }, data: { fee } });
+  revalidatePath(`/teachers/${teacherId}`);
+  revalidatePath("/teachers");
+}
+
 export async function toggleLessonPaid(lessonId: string, teacherId: string, paid: boolean) {
   await prisma.lesson.update({
     where: { id: lessonId },

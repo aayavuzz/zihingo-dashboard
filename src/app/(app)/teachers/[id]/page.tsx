@@ -21,6 +21,7 @@ import {
   toggleLessonPaid,
   updateTeacher,
 } from "../actions";
+import { EditableLessonFeeCell } from "../editable-fee-cell";
 
 export const dynamic = "force-dynamic";
 
@@ -201,7 +202,9 @@ export default async function TeacherDetailPage({
                     </Td>
                     <Td>{l.groupLabel ?? "—"}</Td>
                     <Td>{l.course ?? "—"}</Td>
-                    <Td className="font-medium">{l.fee.toLocaleString("tr-TR")}₺</Td>
+                    <Td>
+                      <EditableLessonFeeCell lessonId={l.id} fee={l.fee} teacherId={id} />
+                    </Td>
                     <Td>
                       <form
                         action={async () => {
