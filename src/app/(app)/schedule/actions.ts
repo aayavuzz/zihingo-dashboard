@@ -14,11 +14,8 @@ function num(formData: FormData, key: string) {
   return v ? Number(v) : undefined;
 }
 
-async function resolveTitle(formData: FormData, groupId?: string) {
-  if (groupId) {
-    const group = await prisma.group.findUnique({ where: { id: groupId } });
-    if (group) return group.name;
-  }
+async function resolveTitle(formData: FormData, groupNames: string[]) {
+  if (groupNames.length > 0) return groupNames.join(" + ");
 
   const studentId = str(formData, "studentId");
   if (studentId) {
@@ -44,31 +41,28 @@ export async function createSession(formData: FormData) {
 
   if (!date || !time) throw new Error("Tarih ve saat zorunludur");
 
-  const baseData = {
-    date,
-    day: dayFromDateStr(date),
-    time,
-    recurring,
-    courseId: str(formData, "courseId"),
-    kurNo: num(formData, "kurNo"),
-    teacherId: str(formData, "teacherId"),
-    durationHrs: num(formData, "durationHrs") ?? 1,
-    note: str(formData, "note"),
-  };
-
-  // Birden fazla grup seçilmişse, her biri için ayrı bir ders oluştur —
-  // aynı ders saatinde 2-3 grup aynı anda girilebilsin diye.
+  // Birden fazla grup seçilebilir — hepsi TEK bir derse/ücrete bağlanır,
+  // ayrı ayrı ders/ödeme oluşmasın diye.
   const groupIds = formData.getAll("groupId").map(String).filter(Boolean);
+  const groups =
+    groupIds.length > 0 ? await prisma.group.findMany({ where: { id: { in: groupIds } } }) : [];
+  const title = await resolveTitle(formData, groups.map((g) => g.name));
 
-  if (groupIds.length > 0) {
-    for (const groupId of groupIds) {
-      const title = await resolveTitle(formData, groupId);
-      await prisma.scheduleSession.create({ data: { ...baseData, title, groupId } });
-    }
-  } else {
-    const title = await resolveTitle(formData, undefined);
-    await prisma.scheduleSession.create({ data: { ...baseData, title } });
-  }
+  await prisma.scheduleSession.create({
+    data: {
+      date,
+      day: dayFromDateStr(date),
+      time,
+      recurring,
+      title,
+      groups: groupIds.length > 0 ? { connect: groupIds.map((id) => ({ id })) } : undefined,
+      courseId: str(formData, "courseId"),
+      kurNo: num(formData, "kurNo"),
+      teacherId: str(formData, "teacherId"),
+      durationHrs: num(formData, "durationHrs") ?? 1,
+      note: str(formData, "note"),
+    },
+  });
 
   revalidatePath("/schedule");
 }
@@ -76,11 +70,14 @@ export async function createSession(formData: FormData) {
 export async function updateSession(sessionId: string, formData: FormData) {
   const date = str(formData, "date");
   const time = str(formData, "time");
-  const groupId = str(formData, "groupId");
-  const title = await resolveTitle(formData, groupId);
   const recurring = str(formData, "recurring") === "on";
 
   if (!date || !time) throw new Error("Tarih ve saat zorunludur");
+
+  const groupIds = formData.getAll("groupId").map(String).filter(Boolean);
+  const groups =
+    groupIds.length > 0 ? await prisma.group.findMany({ where: { id: { in: groupIds } } }) : [];
+  const title = await resolveTitle(formData, groups.map((g) => g.name));
 
   await prisma.scheduleSession.update({
     where: { id: sessionId },
@@ -90,7 +87,7 @@ export async function updateSession(sessionId: string, formData: FormData) {
       time,
       recurring,
       title,
-      groupId: groupId ?? null,
+      groups: { set: groupIds.map((id) => ({ id })) },
       courseId: str(formData, "courseId") ?? null,
       kurNo: num(formData, "kurNo") ?? null,
       teacherId: str(formData, "teacherId") ?? null,
@@ -110,7 +107,7 @@ export async function deleteSession(id: string) {
 export async function logLessonForSession(sessionId: string, dateISO: string) {
   const session = await prisma.scheduleSession.findUniqueOrThrow({
     where: { id: sessionId },
-    include: { teacher: true, group: true, course: true },
+    include: { teacher: true, groups: true, course: true },
   });
   if (!session.teacherId || !session.teacher) {
     throw new Error("Bu ders için önce bir öğretmen atayın");
@@ -140,7 +137,8 @@ export async function logLessonForSession(sessionId: string, dateISO: string) {
       date: dateISO,
       day: session.day,
       time: session.time,
-      groupLabel: session.group?.name ?? session.title,
+      groupLabel:
+        session.groups.length > 0 ? session.groups.map((g) => g.name).join(", ") : session.title,
       course: session.course?.name ?? session.title,
       durationHrs: session.durationHrs,
       fee,

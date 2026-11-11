@@ -58,7 +58,7 @@ export default async function SchedulePage({
 
   const [sessions, teachers, groups, allStudents, courses] = await Promise.all([
     prisma.scheduleSession.findMany({
-      include: { teacher: true, group: true, course: true, lessons: true },
+      include: { teacher: true, groups: true, course: true, lessons: true },
       orderBy: { time: "asc" },
     }),
     prisma.teacher.findMany({ orderBy: { name: "asc" } }),
@@ -224,8 +224,7 @@ type SessionWithRel = {
   recurring: boolean;
   title: string;
   note: string | null;
-  groupId: string | null;
-  group: Group | null;
+  groups: Group[];
   courseId: string | null;
   course: CourseOpt | null;
   kurNo: number | null;
@@ -436,15 +435,11 @@ function SessionEditForm({
           Her hafta bu günde tekrarla (haftalık ders)
         </label>
         <div>
-          <label className={labelClass}>Ders Türü: Grup</label>
-          <select name="groupId" className={inputClass} defaultValue={session.groupId ?? ""}>
-            <option value="">— Grup dersi değil —</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
+          <label className={labelClass}>
+            Ders Türü: Grup{" "}
+            <span className="text-slate-400 font-normal normal-case">(birden fazla seçilebilir)</span>
+          </label>
+          <GroupMultiSelect groups={groups} defaultSelected={session.groups.map((g) => g.id)} />
         </div>
         <div>
           <label className={labelClass}>Ders Türü: Öğrenci (Bireysel Ders)</label>
@@ -534,7 +529,7 @@ function SessionPopoverBody({
   const logWithId = logLessonForSession.bind(null, session.id, dateISO);
   const totalFee = session.lessons.reduce((a, l) => a + l.fee, 0);
   const unpaidFee = session.lessons.filter((l) => !l.paid).reduce((a, l) => a + l.fee, 0);
-  const members = session.groupId ? studentsByGroupId.get(session.groupId) ?? [] : [];
+  const members = session.groups.flatMap((g) => studentsByGroupId.get(g.id) ?? []);
   const alreadyLogged = session.lessons.some((l) => l.date === dateISO);
 
   return (
@@ -542,7 +537,7 @@ function SessionPopoverBody({
       <div>
         <div className="text-sm font-semibold text-slate-800">{session.title}</div>
         <div className="text-xs text-slate-500 mt-0.5">
-          {session.group ? "Grup dersi" : "Bireysel ders"} ·{" "}
+          {session.groups.length > 0 ? "Grup dersi" : "Bireysel ders"} ·{" "}
           {session.recurring ? `Her ${session.day}` : session.date} · {session.time} ·{" "}
           {session.durationHrs} saat
         </div>
@@ -558,10 +553,10 @@ function SessionPopoverBody({
         )}
       </div>
 
-      {session.group && (
+      {session.groups.length > 0 && (
         <div>
           <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
-            Grup Üyeleri ({members.length})
+            {session.groups.map((g) => g.name).join(" + ")} — Grup Üyeleri ({members.length})
           </div>
           <div className="text-xs text-slate-600 leading-relaxed">
             {members.length > 0 ? members.join(", ") : "Bu grupta henüz öğrenci yok."}
