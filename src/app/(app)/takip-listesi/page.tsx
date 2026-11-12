@@ -43,10 +43,11 @@ function daysSince(dateStr: string) {
 export default async function TakipListesiPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; q?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string; status?: string }>;
 }) {
-  const { tab, q } = await searchParams;
+  const { tab, q, status } = await searchParams;
   const activeTab = tab ?? "acik";
+  const activeStatus = status && status !== "all" ? status : undefined;
 
   const leads = await prisma.lead.findMany({
     where: {
@@ -62,6 +63,7 @@ export default async function TakipListesiPage({
   });
 
   const filtered = leads.filter((l) => {
+    if (activeStatus) return l.status === activeStatus;
     if (activeTab === "kapanan") return CLOSED_STATUSES.includes(l.status);
     if (activeTab === "tumu") return true;
     return OPEN_STATUSES.includes(l.status);
@@ -157,9 +159,9 @@ export default async function TakipListesiPage({
           {tabs.map((t) => (
             <a
               key={t.key}
-              href={`/takip-listesi?tab=${t.key}`}
+              href={`/takip-listesi?tab=${t.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
               className={`text-xs font-medium px-3 py-1.5 rounded-full border ${
-                activeTab === t.key
+                !activeStatus && activeTab === t.key
                   ? "bg-brand-600 text-white border-brand-600"
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
               }`}
@@ -168,7 +170,7 @@ export default async function TakipListesiPage({
             </a>
           ))}
         </div>
-        <form className="flex-1">
+        <form className="flex-1 flex items-center gap-2">
           <input type="hidden" name="tab" value={activeTab} />
           <input
             name="q"
@@ -176,6 +178,17 @@ export default async function TakipListesiPage({
             placeholder="İsim, öğrenci veya telefonla ara..."
             className={inputClass + " max-w-xs"}
           />
+          <select name="status" defaultValue={activeStatus ?? "all"} className={inputClass + " max-w-[170px]"}>
+            <option value="all">Tüm durumlar</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {badgeLabels[s] ?? s}
+              </option>
+            ))}
+          </select>
+          <Button type="submit" variant="secondary">
+            Filtrele
+          </Button>
         </form>
       </div>
 
