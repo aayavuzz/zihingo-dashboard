@@ -1,4 +1,5 @@
 import { AlertTriangle, ChevronDown } from "lucide-react";
+import type { Lead } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
   Badge,
@@ -44,6 +45,191 @@ function hoursSince(date: Date) {
   return (Date.now() - date.getTime()) / (1000 * 60 * 60);
 }
 
+function LeadTable({ leads }: { leads: Lead[] }) {
+  if (leads.length === 0) {
+    return (
+      <Card>
+        <EmptyState text="Kayıt bulunamadı." />
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <div>
+        <div
+          className={`${rowCols} px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide`}
+        >
+          <span>Durum</span>
+          <span>Veli / Ad</span>
+          <span>Telefon</span>
+          <span>Öğrenci</span>
+          <span>Temas</span>
+          <span>Not</span>
+          <span />
+        </div>
+
+        {leads.map((l) => {
+          const updateLeadWithId = updateLead.bind(null, l.id);
+          const deleteLeadWithId = deleteLead.bind(null, l.id);
+          const contactDate = l.lastContactDate ?? l.firstContactDate;
+          const takipOverdue = l.status === "TakipAramasi" && hoursSince(l.updatedAt) > 72;
+          const stale =
+            OPEN_STATUSES.includes(l.status) && l.status !== "TakipAramasi" && contactDate
+              ? daysSince(
+                  contactDate.split(".").length === 3
+                    ? contactDate.split(".").reverse().join("-")
+                    : contactDate
+                )
+              : null;
+
+          return (
+            <details key={l.id} className="group border-b border-slate-100 last:border-b-0">
+              <summary
+                className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm transition-colors ${
+                  takipOverdue ? "bg-rose-50 hover:bg-rose-100" : "hover:bg-slate-50"
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <Badge value={l.status} />
+                  {takipOverdue && (
+                    <span title="72 saattir takip araması yapılmadı!">
+                      <AlertTriangle size={14} className="text-rose-600 shrink-0" />
+                    </span>
+                  )}
+                </span>
+                <span className="font-medium text-slate-800 truncate">{l.contactName ?? "—"}</span>
+                <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
+                <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
+                <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
+                  {contactDate ?? "—"}
+                  {stale !== null && stale > 14 && (
+                    <span
+                      className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+                      title={`${stale} gündür güncellenmedi`}
+                    />
+                  )}
+                </span>
+                <span className="text-slate-500 truncate" title={l.note ?? ""}>
+                  {l.note ?? "—"}
+                </span>
+                <ChevronDown
+                  size={16}
+                  className="text-slate-400 transition-transform group-open:rotate-180 justify-self-end"
+                />
+              </summary>
+
+              <div className="px-4 pb-5 pt-3 bg-slate-50/60 border-t border-slate-100">
+                <form action={updateLeadWithId} className="space-y-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className={labelClass}>Veli / İletişim Adı</label>
+                      <input
+                        name="contactName"
+                        defaultValue={l.contactName ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Telefon</label>
+                      <input name="phone" defaultValue={l.phone ?? ""} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Durum</label>
+                      <select name="status" className={inputClass} defaultValue={l.status}>
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>
+                            {badgeLabels[s] ?? s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Öğrenci</label>
+                      <input
+                        name="studentName"
+                        defaultValue={l.studentName ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Yaş</label>
+                      <input
+                        name="age"
+                        type="number"
+                        defaultValue={l.age ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Sınıf</label>
+                      <input name="grade" defaultValue={l.grade ?? ""} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Okul</label>
+                      <input name="school" defaultValue={l.school ?? ""} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Yaşadığı Yer</label>
+                      <input
+                        name="location"
+                        defaultValue={l.location ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>İlk Temas Tarihi</label>
+                      <input
+                        name="firstContactDate"
+                        defaultValue={l.firstContactDate ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Son Temas Tarihi</label>
+                      <input
+                        name="lastContactDate"
+                        defaultValue={l.lastContactDate ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Randevu Tarihi</label>
+                      <input
+                        name="appointmentDate"
+                        defaultValue={l.appointmentDate ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Randevu Saati</label>
+                      <input
+                        name="appointmentTime"
+                        defaultValue={l.appointmentTime ?? ""}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="col-span-2 sm:col-span-4">
+                      <label className={labelClass}>Not</label>
+                      <input name="note" defaultValue={l.note ?? ""} className={inputClass} />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Button variant="primary">Kaydet</Button>
+                  </div>
+                </form>
+                <form action={deleteLeadWithId} className="mt-3">
+                  <button className="text-xs text-rose-500 hover:underline">Sil</button>
+                </form>
+              </div>
+            </details>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 export default async function TakipListesiPage({
   searchParams,
 }: {
@@ -73,8 +259,7 @@ export default async function TakipListesiPage({
     return OPEN_STATUSES.includes(l.status);
   });
 
-  // "Tümü" sekmesinde kapananları karıştırmak yerine en altta ayrı bir
-  // blokta göster.
+  // "Tümü" sekmesinde kapananları karıştırmak yerine ayrı bir tabloda göster.
   const showClosedDivider = activeTab === "tumu" && !activeStatus;
   const openPart = showClosedDivider
     ? filtered.filter((l) => OPEN_STATUSES.includes(l.status))
@@ -82,7 +267,6 @@ export default async function TakipListesiPage({
   const closedPart = showClosedDivider
     ? filtered.filter((l) => CLOSED_STATUSES.includes(l.status))
     : [];
-  const displayList = showClosedDivider ? [...openPart, ...closedPart] : filtered;
 
   const tabs = [
     { key: "acik", label: "Açık", count: leads.filter((l) => OPEN_STATUSES.includes(l.status)).length },
@@ -207,192 +391,21 @@ export default async function TakipListesiPage({
         </form>
       </div>
 
-      <Card>
-        {filtered.length === 0 ? (
-          <EmptyState text="Kayıt bulunamadı." />
-        ) : (
-          <div>
-            <div
-              className={`${rowCols} px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide`}
-            >
-              <span>Durum</span>
-              <span>Veli / Ad</span>
-              <span>Telefon</span>
-              <span>Öğrenci</span>
-              <span>Temas</span>
-              <span>Not</span>
-              <span />
+      {showClosedDivider ? (
+        <div className="space-y-6">
+          <LeadTable leads={openPart} />
+          {closedPart.length > 0 && (
+            <div>
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Kapananlar ({closedPart.length})
+              </h2>
+              <LeadTable leads={closedPart} />
             </div>
-
-            {displayList.map((l, i) => {
-              const updateLeadWithId = updateLead.bind(null, l.id);
-              const deleteLeadWithId = deleteLead.bind(null, l.id);
-              const contactDate = l.lastContactDate ?? l.firstContactDate;
-              const takipOverdue = l.status === "TakipAramasi" && hoursSince(l.updatedAt) > 72;
-              const isFirstClosed = showClosedDivider && i === openPart.length && closedPart.length > 0;
-              const stale =
-                OPEN_STATUSES.includes(l.status) && l.status !== "TakipAramasi" && contactDate
-                  ? daysSince(
-                      contactDate.split(".").length === 3
-                        ? contactDate.split(".").reverse().join("-")
-                        : contactDate
-                    )
-                  : null;
-
-              return (
-                <div key={l.id}>
-                  {isFirstClosed && (
-                    <div className="px-4 py-2 bg-slate-100/80 border-y border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                      Kapananlar ({closedPart.length})
-                    </div>
-                  )}
-                  <details className="group border-b border-slate-100 last:border-b-0">
-                  <summary
-                    className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm transition-colors ${
-                      takipOverdue ? "bg-rose-50 hover:bg-rose-100" : "hover:bg-slate-50"
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Badge value={l.status} />
-                      {takipOverdue && (
-                        <span title="72 saattir takip araması yapılmadı!">
-                          <AlertTriangle size={14} className="text-rose-600 shrink-0" />
-                        </span>
-                      )}
-                    </span>
-                    <span className="font-medium text-slate-800 truncate">
-                      {l.contactName ?? "—"}
-                    </span>
-                    <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
-                    <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
-                    <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
-                      {contactDate ?? "—"}
-                      {stale !== null && stale > 14 && (
-                        <span
-                          className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
-                          title={`${stale} gündür güncellenmedi`}
-                        />
-                      )}
-                    </span>
-                    <span className="text-slate-500 truncate" title={l.note ?? ""}>
-                      {l.note ?? "—"}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className="text-slate-400 transition-transform group-open:rotate-180 justify-self-end"
-                    />
-                  </summary>
-
-                  <div className="px-4 pb-5 pt-3 bg-slate-50/60 border-t border-slate-100">
-                    <form action={updateLeadWithId} className="space-y-3">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div>
-                          <label className={labelClass}>Veli / İletişim Adı</label>
-                          <input
-                            name="contactName"
-                            defaultValue={l.contactName ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Telefon</label>
-                          <input name="phone" defaultValue={l.phone ?? ""} className={inputClass} />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Durum</label>
-                          <select name="status" className={inputClass} defaultValue={l.status}>
-                            {STATUS_OPTIONS.map((s) => (
-                              <option key={s} value={s}>
-                                {badgeLabels[s] ?? s}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className={labelClass}>Öğrenci</label>
-                          <input
-                            name="studentName"
-                            defaultValue={l.studentName ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Yaş</label>
-                          <input
-                            name="age"
-                            type="number"
-                            defaultValue={l.age ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Sınıf</label>
-                          <input name="grade" defaultValue={l.grade ?? ""} className={inputClass} />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Okul</label>
-                          <input name="school" defaultValue={l.school ?? ""} className={inputClass} />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Yaşadığı Yer</label>
-                          <input
-                            name="location"
-                            defaultValue={l.location ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>İlk Temas Tarihi</label>
-                          <input
-                            name="firstContactDate"
-                            defaultValue={l.firstContactDate ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Son Temas Tarihi</label>
-                          <input
-                            name="lastContactDate"
-                            defaultValue={l.lastContactDate ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Randevu Tarihi</label>
-                          <input
-                            name="appointmentDate"
-                            defaultValue={l.appointmentDate ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Randevu Saati</label>
-                          <input
-                            name="appointmentTime"
-                            defaultValue={l.appointmentTime ?? ""}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div className="col-span-2 sm:col-span-4">
-                          <label className={labelClass}>Not</label>
-                          <input name="note" defaultValue={l.note ?? ""} className={inputClass} />
-                        </div>
-                      </div>
-                      <div className="flex gap-2 pt-1">
-                        <Button variant="primary">Kaydet</Button>
-                      </div>
-                    </form>
-                    <form action={deleteLeadWithId} className="mt-3">
-                      <button className="text-xs text-rose-500 hover:underline">Sil</button>
-                    </form>
-                  </div>
-                  </details>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+          )}
+        </div>
+      ) : (
+        <LeadTable leads={filtered} />
+      )}
     </div>
   );
 }
