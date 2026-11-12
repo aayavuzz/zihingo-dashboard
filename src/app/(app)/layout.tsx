@@ -4,6 +4,7 @@ import {
   GraduationCap,
   Layers,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Users,
   UsersRound,
@@ -15,6 +16,7 @@ import { getSession } from "@/lib/session";
 const iconProps = { size: 17, strokeWidth: 2 };
 const navItems = [
   { href: "/", label: "Panel", icon: <LayoutDashboard {...iconProps} /> },
+  { href: "/takip-listesi", label: "Takip Listesi", icon: <ListChecks {...iconProps} /> },
   { href: "/students", label: "Öğrenciler", icon: <GraduationCap {...iconProps} /> },
   { href: "/groups", label: "Gruplar", icon: <UsersRound {...iconProps} /> },
   { href: "/courses", label: "Kurlar", icon: <Layers {...iconProps} /> },

@@ -100,7 +100,12 @@ const badgeTones: Record<string, string> = {
   Olumlu: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15",
   Olumsuz: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/15",
   TakipAramasi: "bg-brand-50 text-brand-700 ring-1 ring-brand-600/15",
-  Ulasilamadi: "bg-slate-100 text-slate-600 ring-1 ring-slate-500/10",
+  Ulasilamadi: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/15",
+  Yeni: "bg-sky-50 text-sky-700 ring-1 ring-sky-600/15",
+  Kapandi: "bg-slate-100 text-slate-500 ring-1 ring-slate-500/10",
+  Havuz: "bg-violet-50 text-violet-700 ring-1 ring-violet-600/15",
+  OfiseDavet: "bg-brand-50 text-brand-700 ring-1 ring-brand-600/15",
+  DonusBekleniyor: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/15",
 };
 
 export const badgeLabels: Record<string, string> = {
@@ -111,6 +116,11 @@ export const badgeLabels: Record<string, string> = {
   Ulasilamadi: "Ulaşılamadı",
   Olumlu: "Olumlu",
   Olumsuz: "Olumsuz",
+  Yeni: "Yeni",
+  Kapandi: "Kapandı",
+  Havuz: "Havuz",
+  OfiseDavet: "Ofise Davet",
+  DonusBekleniyor: "Dönüş Bekleniyor",
   Normal: "Normal",
   OkulOncesi: "Okul Öncesi",
   PerLesson: "Ders Başına",

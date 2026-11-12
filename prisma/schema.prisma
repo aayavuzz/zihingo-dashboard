@@ -125,13 +125,13 @@ model ScheduleSession {
 }
 
 // type: "Normal" | "OkulOncesi"
-// durum: "Ulasilamadi" | "TakipAramasi" | "Olumsuz" | "Olumlu"
+// durum: "Yeni" | "TakipAramasi" | "Olumlu" | "Olumsuz" | "Kapandi" | "Havuz" | "OfiseDavet" | "DonusBekleniyor" | "Ulasilamadi"
 model Lead {
   id                String   @id @default(cuid())
   type              String   @default("Normal")
   contactName       String?
   phone             String?
-  status            String   @default("TakipAramasi")
+  status            String   @default("Yeni")
   studentName       String?
   age               Int?
   grade             String?
