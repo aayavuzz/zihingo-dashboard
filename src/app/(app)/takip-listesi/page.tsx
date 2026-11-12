@@ -30,9 +30,9 @@ const STATUS_OPTIONS = [
   "Kapandi",
 ];
 
-// Durum | Veli/Ad | Telefon | Öğrenci | Yaş/Sınıf | İlk Temas | ok
+// Durum | Veli/Ad | Telefon | Öğrenci | Temas | Not | ok
 const rowCols =
-  "grid grid-cols-[92px_minmax(120px,1.2fr)_120px_minmax(100px,1fr)_80px_110px_24px] items-center gap-3";
+  "grid grid-cols-[132px_minmax(130px,1fr)_120px_minmax(110px,0.9fr)_100px_minmax(140px,1.4fr)_24px] items-center gap-3";
 
 function daysSince(dateStr: string) {
   const d = new Date(dateStr);
@@ -191,20 +191,21 @@ export default async function TakipListesiPage({
               <span>Veli / Ad</span>
               <span>Telefon</span>
               <span>Öğrenci</span>
-              <span>Yaş/Sınıf</span>
-              <span>İlk Temas</span>
+              <span>Temas</span>
+              <span>Not</span>
               <span />
             </div>
 
             {filtered.map((l) => {
               const updateLeadWithId = updateLead.bind(null, l.id);
               const deleteLeadWithId = deleteLead.bind(null, l.id);
+              const contactDate = l.lastContactDate ?? l.firstContactDate;
               const stale =
-                OPEN_STATUSES.includes(l.status) && l.firstContactDate
+                OPEN_STATUSES.includes(l.status) && contactDate
                   ? daysSince(
-                      l.firstContactDate.split(".").length === 3
-                        ? l.firstContactDate.split(".").reverse().join("-")
-                        : l.firstContactDate
+                      contactDate.split(".").length === 3
+                        ? contactDate.split(".").reverse().join("-")
+                        : contactDate
                     )
                   : null;
 
@@ -221,17 +222,17 @@ export default async function TakipListesiPage({
                     </span>
                     <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
                     <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
-                    <span className="text-slate-500">
-                      {l.age ?? "—"} / {l.grade ?? "—"}
-                    </span>
-                    <span className="text-slate-500 flex items-center gap-1">
-                      {l.firstContactDate ?? "—"}
+                    <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
+                      {contactDate ?? "—"}
                       {stale !== null && stale > 14 && (
                         <span
                           className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
                           title={`${stale} gündür güncellenmedi`}
                         />
                       )}
+                    </span>
+                    <span className="text-slate-500 truncate" title={l.note ?? ""}>
+                      {l.note ?? "—"}
                     </span>
                     <ChevronDown
                       size={16}

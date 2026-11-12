@@ -131,7 +131,7 @@ export function Badge({ value }: { value: string }) {
   const cls = badgeTones[value] ?? "bg-slate-100 text-slate-600 ring-1 ring-slate-500/10";
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}
     >
       {badgeLabels[value] ?? value}
     </span>
