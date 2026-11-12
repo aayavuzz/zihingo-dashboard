@@ -73,6 +73,17 @@ export default async function TakipListesiPage({
     return OPEN_STATUSES.includes(l.status);
   });
 
+  // "Tümü" sekmesinde kapananları karıştırmak yerine en altta ayrı bir
+  // blokta göster.
+  const showClosedDivider = activeTab === "tumu" && !activeStatus;
+  const openPart = showClosedDivider
+    ? filtered.filter((l) => OPEN_STATUSES.includes(l.status))
+    : filtered;
+  const closedPart = showClosedDivider
+    ? filtered.filter((l) => CLOSED_STATUSES.includes(l.status))
+    : [];
+  const displayList = showClosedDivider ? [...openPart, ...closedPart] : filtered;
+
   const tabs = [
     { key: "acik", label: "Açık", count: leads.filter((l) => OPEN_STATUSES.includes(l.status)).length },
     { key: "kapanan", label: "Kapanan", count: leads.filter((l) => CLOSED_STATUSES.includes(l.status)).length },
@@ -213,11 +224,12 @@ export default async function TakipListesiPage({
               <span />
             </div>
 
-            {filtered.map((l) => {
+            {displayList.map((l, i) => {
               const updateLeadWithId = updateLead.bind(null, l.id);
               const deleteLeadWithId = deleteLead.bind(null, l.id);
               const contactDate = l.lastContactDate ?? l.firstContactDate;
               const takipOverdue = l.status === "TakipAramasi" && hoursSince(l.updatedAt) > 72;
+              const isFirstClosed = showClosedDivider && i === openPart.length && closedPart.length > 0;
               const stale =
                 OPEN_STATUSES.includes(l.status) && l.status !== "TakipAramasi" && contactDate
                   ? daysSince(
@@ -228,7 +240,13 @@ export default async function TakipListesiPage({
                   : null;
 
               return (
-                <details key={l.id} className="group border-b border-slate-100 last:border-b-0">
+                <div key={l.id}>
+                  {isFirstClosed && (
+                    <div className="px-4 py-2 bg-slate-100/80 border-y border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                      Kapananlar ({closedPart.length})
+                    </div>
+                  )}
+                  <details className="group border-b border-slate-100 last:border-b-0">
                   <summary
                     className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm transition-colors ${
                       takipOverdue ? "bg-rose-50 hover:bg-rose-100" : "hover:bg-slate-50"
@@ -368,7 +386,8 @@ export default async function TakipListesiPage({
                       <button className="text-xs text-rose-500 hover:underline">Sil</button>
                     </form>
                   </div>
-                </details>
+                  </details>
+                </div>
               );
             })}
           </div>
