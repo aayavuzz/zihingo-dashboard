@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { AlertTriangle, ChevronDown } from "lucide-react";
 import { prisma } from "@/lib/db";
 import {
   Badge,
@@ -38,6 +38,10 @@ function daysSince(dateStr: string) {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return null;
   return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function hoursSince(date: Date) {
+  return (Date.now() - date.getTime()) / (1000 * 60 * 60);
 }
 
 export default async function TakipListesiPage({
@@ -213,8 +217,9 @@ export default async function TakipListesiPage({
               const updateLeadWithId = updateLead.bind(null, l.id);
               const deleteLeadWithId = deleteLead.bind(null, l.id);
               const contactDate = l.lastContactDate ?? l.firstContactDate;
+              const takipOverdue = l.status === "TakipAramasi" && hoursSince(l.updatedAt) > 72;
               const stale =
-                OPEN_STATUSES.includes(l.status) && contactDate
+                OPEN_STATUSES.includes(l.status) && l.status !== "TakipAramasi" && contactDate
                   ? daysSince(
                       contactDate.split(".").length === 3
                         ? contactDate.split(".").reverse().join("-")
@@ -225,10 +230,17 @@ export default async function TakipListesiPage({
               return (
                 <details key={l.id} className="group border-b border-slate-100 last:border-b-0">
                   <summary
-                    className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors`}
+                    className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm transition-colors ${
+                      takipOverdue ? "bg-rose-50 hover:bg-rose-100" : "hover:bg-slate-50"
+                    }`}
                   >
-                    <span>
+                    <span className="flex items-center gap-1.5">
                       <Badge value={l.status} />
+                      {takipOverdue && (
+                        <span title="72 saattir takip araması yapılmadı!">
+                          <AlertTriangle size={14} className="text-rose-600 shrink-0" />
+                        </span>
+                      )}
                     </span>
                     <span className="font-medium text-slate-800 truncate">
                       {l.contactName ?? "—"}
