@@ -33,9 +33,9 @@ const STATUS_OPTIONS = [
 
 const TYPE_OPTIONS = ["Normal", "OkulOncesi"];
 
-// Durum | Veli/Ad | Telefon | Öğrenci | Son Temas Tarihi | Not | ok
+// Durum | Veli/Ad | Telefon | Öğrenci | İlk Temas | Son Temas | Not | ok
 const rowCols =
-  "grid grid-cols-[132px_minmax(130px,1fr)_120px_minmax(110px,0.9fr)_118px_minmax(140px,1.4fr)_24px] items-center gap-3";
+  "grid grid-cols-[122px_minmax(120px,1fr)_110px_minmax(100px,0.8fr)_104px_104px_minmax(130px,1.2fr)_20px] items-center gap-3";
 
 function daysSince(dateStr: string) {
   const d = new Date(dateStr);
@@ -84,6 +84,7 @@ function LeadTable({ leads }: { leads: Lead[] }) {
           <span>Veli / Ad</span>
           <span>Telefon</span>
           <span>Öğrenci</span>
+          <span>İlk Temas Tarihi</span>
           <span>Son Temas Tarihi</span>
           <span>Not</span>
           <span />
@@ -136,6 +137,9 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                 </span>
                 <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
                 <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
+                <span className="text-slate-500 whitespace-nowrap">
+                  {toTRDisplay(l.firstContactDate) || "—"}
+                </span>
                 <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
                   {toTRDisplay(contactDate) || "—"}
                   {stale !== null && stale > 14 && (
