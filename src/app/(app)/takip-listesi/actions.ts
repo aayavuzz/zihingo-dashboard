@@ -40,6 +40,7 @@ export async function updateLead(id: string, formData: FormData) {
   await prisma.lead.update({
     where: { id },
     data: {
+      type: str(formData, "type") ?? "Normal",
       contactName: str(formData, "contactName") ?? null,
       phone: str(formData, "phone") ?? null,
       status: str(formData, "status") ?? "Yeni",

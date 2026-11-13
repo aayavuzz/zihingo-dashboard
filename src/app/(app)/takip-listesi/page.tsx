@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronDown } from "lucide-react";
+import { AlertTriangle, Baby, ChevronDown } from "lucide-react";
 import type { Lead } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
@@ -31,9 +31,11 @@ const STATUS_OPTIONS = [
   "Kapandi",
 ];
 
-// Durum | Veli/Ad | Telefon | Öğrenci | Temas | Not | ok
+const TYPE_OPTIONS = ["Normal", "OkulOncesi"];
+
+// Durum | Veli/Ad | Telefon | Öğrenci | Son Temas Tarihi | Not | ok
 const rowCols =
-  "grid grid-cols-[132px_minmax(130px,1fr)_120px_minmax(110px,0.9fr)_100px_minmax(140px,1.4fr)_24px] items-center gap-3";
+  "grid grid-cols-[132px_minmax(130px,1fr)_120px_minmax(110px,0.9fr)_118px_minmax(140px,1.4fr)_24px] items-center gap-3";
 
 function daysSince(dateStr: string) {
   const d = new Date(dateStr);
@@ -43,6 +45,24 @@ function daysSince(dateStr: string) {
 
 function hoursSince(date: Date) {
   return (Date.now() - date.getTime()) / (1000 * 60 * 60);
+}
+
+// Serbest metin tarihleri ("gg.aa.yyyy" eski kayıtlar, "yyyy-aa-gg" <input type="date">
+// çıktısı) tek formatta gösterip input'a geri besleyebilmek için ortak yardımcılar.
+function toISOInput(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const tr = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(dateStr.trim());
+  if (tr) return `${tr[3]}-${tr[2].padStart(2, "0")}-${tr[1].padStart(2, "0")}`;
+  return "";
+}
+
+function toTRDisplay(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr);
+  if (iso) return `${iso[3]}.${iso[2]}.${iso[1]}`;
+  return dateStr;
 }
 
 function LeadTable({ leads }: { leads: Lead[] }) {
@@ -64,7 +84,7 @@ function LeadTable({ leads }: { leads: Lead[] }) {
           <span>Veli / Ad</span>
           <span>Telefon</span>
           <span>Öğrenci</span>
-          <span>Temas</span>
+          <span>Son Temas Tarihi</span>
           <span>Not</span>
           <span />
         </div>
@@ -98,11 +118,26 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                     </span>
                   )}
                 </span>
-                <span className="font-medium text-slate-800 truncate">{l.contactName ?? "—"}</span>
+                <span className="flex items-center gap-1.5 min-w-0">
+                  {l.type === "OkulOncesi" && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
+                      <Baby size={12} />
+                    </span>
+                  )}
+                  <span
+                    className={`font-medium truncate ${
+                      l.type === "OkulOncesi"
+                        ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
+                        : "text-slate-800"
+                    }`}
+                  >
+                    {l.contactName ?? "—"}
+                  </span>
+                </span>
                 <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
                 <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
                 <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
-                  {contactDate ?? "—"}
+                  {toTRDisplay(contactDate) || "—"}
                   {stale !== null && stale > 14 && (
                     <span
                       className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
@@ -145,6 +180,16 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                       </select>
                     </div>
                     <div>
+                      <label className={labelClass}>Kategori</label>
+                      <select name="type" className={inputClass} defaultValue={l.type}>
+                        {TYPE_OPTIONS.map((t) => (
+                          <option key={t} value={t}>
+                            {badgeLabels[t] ?? t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
                       <label className={labelClass}>Öğrenci</label>
                       <input
                         name="studentName"
@@ -180,24 +225,27 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                     <div>
                       <label className={labelClass}>İlk Temas Tarihi</label>
                       <input
+                        type="date"
                         name="firstContactDate"
-                        defaultValue={l.firstContactDate ?? ""}
+                        defaultValue={toISOInput(l.firstContactDate)}
                         className={inputClass}
                       />
                     </div>
                     <div>
                       <label className={labelClass}>Son Temas Tarihi</label>
                       <input
+                        type="date"
                         name="lastContactDate"
-                        defaultValue={l.lastContactDate ?? ""}
+                        defaultValue={toISOInput(l.lastContactDate)}
                         className={inputClass}
                       />
                     </div>
                     <div>
                       <label className={labelClass}>Randevu Tarihi</label>
                       <input
+                        type="date"
                         name="appointmentDate"
-                        defaultValue={l.appointmentDate ?? ""}
+                        defaultValue={toISOInput(l.appointmentDate)}
                         className={inputClass}
                       />
                     </div>
@@ -320,24 +368,36 @@ export default async function TakipListesiPage({
                     <input name="location" className={inputClass} />
                   </div>
                 </div>
-                <div>
-                  <label className={labelClass}>Durum</label>
-                  <select name="status" className={inputClass} defaultValue="Yeni">
-                    {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s}>
-                        {badgeLabels[s] ?? s}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelClass}>Durum</label>
+                    <select name="status" className={inputClass} defaultValue="Yeni">
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>
+                          {badgeLabels[s] ?? s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Kategori</label>
+                    <select name="type" className={inputClass} defaultValue="Normal">
+                      {TYPE_OPTIONS.map((t) => (
+                        <option key={t} value={t}>
+                          {badgeLabels[t] ?? t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass}>İlk Temas Tarihi</label>
-                    <input name="firstContactDate" placeholder="gg.aa.yyyy" className={inputClass} />
+                    <input type="date" name="firstContactDate" className={inputClass} />
                   </div>
                   <div>
                     <label className={labelClass}>Randevu Tarihi</label>
-                    <input name="appointmentDate" placeholder="gg.aa.yyyy" className={inputClass} />
+                    <input type="date" name="appointmentDate" className={inputClass} />
                   </div>
                 </div>
                 <div>
