@@ -84,8 +84,8 @@ function LeadTable({ leads }: { leads: Lead[] }) {
           <span>Veli / Ad</span>
           <span>Telefon</span>
           <span>Öğrenci</span>
-          <span>İlk Temas Tarihi</span>
-          <span>Son Temas Tarihi</span>
+          <span>İlk Temas</span>
+          <span>Son Temas</span>
           <span>Not</span>
           <span />
         </div>
