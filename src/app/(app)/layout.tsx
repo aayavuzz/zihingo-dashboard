@@ -31,11 +31,17 @@ const navItems = [
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const session = await getSession();
-  const visibleNavItems = navItems.filter((item) => {
-    if (item.adminOnly && session?.role === "teacher") return false;
-    if (item.superAdminOnly && session?.role !== "superadmin") return false;
-    return true;
-  });
+  const visibleNavItems = navItems
+    .filter((item) => {
+      if (item.adminOnly && session?.role === "teacher") return false;
+      if (item.superAdminOnly && session?.role !== "superadmin") return false;
+      return true;
+    })
+    .map((item) =>
+      item.href === "/profil" && session?.role === "superadmin"
+        ? { ...item, label: "Kullanıcılar" }
+        : item
+    );
 
   return (
     <div className="min-h-full flex bg-slate-100 text-slate-900">
