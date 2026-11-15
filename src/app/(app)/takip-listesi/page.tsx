@@ -72,7 +72,7 @@ function toTRDisplay(dateStr?: string | null): string {
   return dateStr;
 }
 
-function LeadTable({ leads }: { leads: Lead[] }) {
+function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallFields?: boolean }) {
   if (leads.length === 0) {
     return (
       <Card>
@@ -96,8 +96,17 @@ function LeadTable({ leads }: { leads: Lead[] }) {
           <span>Veli / Ad</span>
           <span>Telefon</span>
           <span>Öğrenci</span>
-          <span>İlk Temas</span>
-          <span>Son Temas</span>
+          {showCallFields ? (
+            <>
+              <span>Arama Günü</span>
+              <span>Arama Saati</span>
+            </>
+          ) : (
+            <>
+              <span>İlk Temas</span>
+              <span>Son Temas</span>
+            </>
+          )}
           <span>Not</span>
           <span />
         </div>
@@ -152,18 +161,31 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                 </span>
                 <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
                 <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
-                <span className="text-slate-500 whitespace-nowrap">
-                  {toTRDisplay(l.firstContactDate) || "—"}
-                </span>
-                <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
-                  {toTRDisplay(contactDate) || "—"}
-                  {stale !== null && stale > 14 && (
-                    <span
-                      className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
-                      title={`${stale} gündür güncellenmedi`}
-                    />
-                  )}
-                </span>
+                {showCallFields ? (
+                  <>
+                    <span className="text-slate-500 whitespace-nowrap">
+                      {toTRDisplay(l.callDate) || "—"}
+                    </span>
+                    <span className="text-slate-500 whitespace-nowrap">
+                      {l.callTime || "—"}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-slate-500 whitespace-nowrap">
+                      {toTRDisplay(l.firstContactDate) || "—"}
+                    </span>
+                    <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
+                      {toTRDisplay(contactDate) || "—"}
+                      {stale !== null && stale > 14 && (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+                          title={`${stale} gündür güncellenmedi`}
+                        />
+                      )}
+                    </span>
+                  </>
+                )}
                 <span className="text-slate-500 truncate" title={l.note ?? ""}>
                   {l.note ?? "—"}
                 </span>
@@ -456,7 +478,7 @@ export default async function TakipListesiPage({
           )}
         </div>
       ) : (
-        <LeadTable leads={filtered} />
+        <LeadTable leads={filtered} showCallFields={activeStatus === "Aranacak"} />
       )}
     </div>
   );
