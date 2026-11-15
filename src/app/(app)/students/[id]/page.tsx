@@ -268,16 +268,19 @@ export default async function StudentDetailPage({
                   <tr key={inst.id} className="hover:bg-slate-50">
                     <Td>{inst.index}. Kur</Td>
                     <Td className="font-medium">
-                      {inst.status === "KismiOdendi" ? (
-                        <>
-                          {(inst.paidAmount ?? 0).toLocaleString("tr-TR")}₺
-                          <span className="text-slate-400 font-normal">
-                            {" "}
-                            / {inst.amount.toLocaleString("tr-TR")}₺
-                          </span>
-                        </>
-                      ) : (
-                        `${inst.amount.toLocaleString("tr-TR")}₺`
+                      <div>{inst.amount.toLocaleString("tr-TR")}₺</div>
+                      {inst.status === "KismiOdendi" && (
+                        <div
+                          className="mt-1 h-1 w-16 rounded-full bg-slate-200 overflow-hidden"
+                          title={`${(inst.paidAmount ?? 0).toLocaleString("tr-TR")}₺ ödendi · ${(inst.amount - (inst.paidAmount ?? 0)).toLocaleString("tr-TR")}₺ kaldı`}
+                        >
+                          <div
+                            className="h-full rounded-full bg-emerald-500"
+                            style={{
+                              width: `${Math.min(100, Math.round(((inst.paidAmount ?? 0) / inst.amount) * 100))}%`,
+                            }}
+                          />
+                        </div>
                       )}
                     </Td>
                     <Td>

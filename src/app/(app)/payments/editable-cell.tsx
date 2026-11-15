@@ -114,19 +114,26 @@ export function EditableInstallmentCell({
         onClick={() => setOpen((v) => !v)}
         className={`group relative block w-full rounded-md px-2 py-1.5 text-xs font-semibold transition hover:ring-2 hover:ring-brand-300 ${cellTone[installment.status]}`}
       >
-        <div>
-          {installment.status === "KismiOdendi" ? (
-            <>
-              {(installment.paidAmount ?? 0).toLocaleString("tr-TR")}
-              <span className="opacity-60">/{installment.amount.toLocaleString("tr-TR")}₺</span>
-            </>
-          ) : (
-            formatTL(installment.amount)
-          )}
-        </div>
-        {installment.note && (
+        <div>{formatTL(installment.amount)}</div>
+        {installment.status === "KismiOdendi" && (
+          <div className="mt-1 h-1 rounded-full bg-black/10 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-emerald-500"
+              style={{
+                width: `${Math.min(100, Math.round(((installment.paidAmount ?? 0) / installment.amount) * 100))}%`,
+              }}
+            />
+          </div>
+        )}
+        {(installment.note || installment.status === "KismiOdendi") && (
           <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded-md bg-slate-900 text-white text-[11px] font-medium px-2 py-1 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-100 z-30">
-            {installment.note}
+            {installment.status === "KismiOdendi" && (
+              <div>
+                {formatTL(installment.paidAmount ?? 0)} ödendi ·{" "}
+                {formatTL(installment.amount - (installment.paidAmount ?? 0))} kaldı
+              </div>
+            )}
+            {installment.note && <div>{installment.note}</div>}
           </span>
         )}
       </button>
