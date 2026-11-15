@@ -22,14 +22,6 @@ export function MobileNav({ children, tabs }: { children: ReactNode; tabs: NavTa
 
   return (
     <>
-      <div className="md:hidden sticky top-0 z-30 flex items-center h-14 px-4 bg-white border-b border-slate-200/80">
-        <div className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="ZihinGO" className="w-7 h-7 shrink-0" />
-          <span className="text-sm font-bold text-slate-900">ZihinGO</span>
-        </div>
-      </div>
-
       {open && (
         <div
           className="md:hidden fixed inset-0 bg-black/30 z-40"
