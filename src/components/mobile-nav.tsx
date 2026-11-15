@@ -1,27 +1,33 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Menu, X } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MoreHorizontal, X } from "lucide-react";
 
-export function MobileNav({ children }: { children: ReactNode }) {
+export type NavTab = {
+  href: string;
+  label: string;
+  icon: ReactNode;
+};
+
+export function MobileNav({ children, tabs }: { children: ReactNode; tabs: NavTab[] }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   return (
     <>
-      <div className="md:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-white border-b border-slate-200/80">
+      <div className="md:hidden sticky top-0 z-30 flex items-center h-14 px-4 bg-white border-b border-slate-200/80">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="ZihinGO" className="w-7 h-7 shrink-0" />
           <span className="text-sm font-bold text-slate-900">ZihinGO</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="p-2 -mr-2 text-slate-600 hover:bg-slate-100 rounded-lg"
-          aria-label="Menüyü aç"
-        >
-          <Menu size={22} />
-        </button>
       </div>
 
       {open && (
@@ -50,6 +56,34 @@ export function MobileNav({ children }: { children: ReactNode }) {
           {children}
         </div>
       </div>
+
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200/80 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-stretch h-16">
+          {tabs.map((tab) => {
+            const active = isActive(tab.href);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors ${
+                  active ? "text-brand-600" : "text-slate-400"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </Link>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-slate-400"
+          >
+            <MoreHorizontal size={20} strokeWidth={2} />
+            Diğer
+          </button>
+        </div>
+      </nav>
     </>
   );
 }

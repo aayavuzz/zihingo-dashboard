@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   CalendarDays,
   CreditCard,
@@ -12,23 +13,59 @@ import {
   UsersRound,
 } from "lucide-react";
 import { NavLink } from "@/components/nav-link";
-import { MobileNav } from "@/components/mobile-nav";
+import { MobileNav, type NavTab } from "@/components/mobile-nav";
 import { logout } from "@/app/login/actions";
 import { getSession } from "@/lib/session";
 
 const iconProps = { size: 17, strokeWidth: 2 };
-const navItems = [
-  { href: "/", label: "Panel", icon: <LayoutDashboard {...iconProps} /> },
-  { href: "/takip-listesi", label: "Takip Listesi", icon: <ListChecks {...iconProps} /> },
-  { href: "/students", label: "Öğrenciler", icon: <GraduationCap {...iconProps} /> },
+const tabIconProps = { size: 20, strokeWidth: 2 };
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: ReactNode;
+  tabLabel?: string;
+  tabIcon?: ReactNode;
+  adminOnly?: boolean;
+  superAdminOnly?: boolean;
+};
+
+const navItems: NavItem[] = [
+  {
+    href: "/",
+    label: "Panel",
+    icon: <LayoutDashboard {...iconProps} />,
+    tabIcon: <LayoutDashboard {...tabIconProps} />,
+  },
+  {
+    href: "/takip-listesi",
+    label: "Takip Listesi",
+    tabLabel: "Takip",
+    icon: <ListChecks {...iconProps} />,
+    tabIcon: <ListChecks {...tabIconProps} />,
+  },
+  {
+    href: "/students",
+    label: "Öğrenciler",
+    icon: <GraduationCap {...iconProps} />,
+    tabIcon: <GraduationCap {...tabIconProps} />,
+  },
   { href: "/groups", label: "Gruplar", icon: <UsersRound {...iconProps} /> },
   { href: "/courses", label: "Kurlar", icon: <Layers {...iconProps} /> },
   { href: "/payments", label: "Ödemeler", icon: <CreditCard {...iconProps} />, adminOnly: true },
-  { href: "/schedule", label: "Haftalık Program", icon: <CalendarDays {...iconProps} /> },
+  {
+    href: "/schedule",
+    label: "Haftalık Program",
+    tabLabel: "Program",
+    icon: <CalendarDays {...iconProps} />,
+    tabIcon: <CalendarDays {...tabIconProps} />,
+  },
   { href: "/profil", label: "Profil", icon: <User {...iconProps} /> },
   { href: "/teachers", label: "Öğretmenler", icon: <Users {...iconProps} />, adminOnly: true },
   { href: "/loglar", label: "Loglar", icon: <ScrollText {...iconProps} />, superAdminOnly: true },
 ];
+
+const primaryTabHrefs = ["/", "/takip-listesi", "/students", "/schedule"];
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const session = await getSession();
@@ -43,6 +80,15 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         ? { ...item, label: "Kullanıcılar" }
         : item
     );
+
+  const primaryTabs: NavTab[] = primaryTabHrefs
+    .map((href) => visibleNavItems.find((item) => item.href === href))
+    .filter((item): item is (typeof visibleNavItems)[number] => Boolean(item))
+    .map((item) => ({
+      href: item.href,
+      label: item.tabLabel ?? item.label,
+      icon: item.tabIcon ?? item.icon,
+    }));
 
   const sidebarInner = (
     <>
@@ -108,10 +154,12 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         {sidebarInner}
       </aside>
 
-      <MobileNav>{sidebarInner}</MobileNav>
+      <MobileNav tabs={primaryTabs}>{sidebarInner}</MobileNav>
 
       <main className="flex-1 min-h-screen min-w-0">
-        <div className="max-w-full px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-8">{children}</div>
+        <div className="max-w-full px-4 pt-5 pb-24 sm:px-6 sm:pt-6 sm:pb-24 md:px-8 md:py-8">
+          {children}
+        </div>
       </main>
     </div>
   );
