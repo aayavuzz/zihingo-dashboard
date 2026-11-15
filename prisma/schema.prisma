@@ -151,7 +151,7 @@ model ScheduleSession {
 }
 
 // type: "Normal" | "OkulOncesi"
-// durum: "Yeni" | "TakipAramasi" | "Olumlu" | "Olumsuz" | "Kapandi" | "Havuz" | "OfiseDavet" | "DonusBekleniyor" | "Ulasilamadi"
+// durum: "Yeni" | "Aranacak" | "TakipAramasi" | "Olumlu" | "Olumsuz" | "Kapandi" | "Havuz" | "OfiseDavet" | "DonusBekleniyor" | "Ulasilamadi"
 model Lead {
   id                String   @id @default(cuid())
   type              String   @default("Normal")
@@ -167,6 +167,8 @@ model Lead {
   lastContactDate   String?
   appointmentDate   String?
   appointmentTime   String?
+  callDate          String? // "Aranacak" durumunda planlanan arama tarihi
+  callTime          String? // "Aranacak" durumunda planlanan arama saati
   note              String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

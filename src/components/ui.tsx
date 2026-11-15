@@ -106,6 +106,7 @@ const badgeTones: Record<string, string> = {
   Havuz: "bg-violet-50 text-violet-700 ring-1 ring-violet-600/15",
   OfiseDavet: "bg-brand-50 text-brand-700 ring-1 ring-brand-600/15",
   DonusBekleniyor: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/15",
+  Aranacak: "bg-cyan-50 text-cyan-700 ring-1 ring-cyan-600/15",
 };
 
 export const badgeLabels: Record<string, string> = {
@@ -121,6 +122,7 @@ export const badgeLabels: Record<string, string> = {
   Havuz: "Havuz",
   OfiseDavet: "Ofise Davet",
   DonusBekleniyor: "Dönüş Bekleniyor",
+  Aranacak: "Aranacak",
   Normal: "Normal",
   OkulOncesi: "Okul Öncesi",
   PerLesson: "Ders Başına",

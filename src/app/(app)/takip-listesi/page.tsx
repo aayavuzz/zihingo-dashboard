@@ -14,14 +14,16 @@ import {
   labelClass,
 } from "@/components/ui";
 import { createLead, deleteLead, updateLead } from "./actions";
+import { LeadStatusFields } from "@/components/lead-status-fields";
 
 export const dynamic = "force-dynamic";
 
-const OPEN_STATUSES = ["Yeni", "TakipAramasi", "Havuz", "OfiseDavet", "DonusBekleniyor", "Ulasilamadi"];
+const OPEN_STATUSES = ["Yeni", "Aranacak", "TakipAramasi", "Havuz", "OfiseDavet", "DonusBekleniyor", "Ulasilamadi"];
 const CLOSED_STATUSES = ["Olumlu", "Olumsuz", "Kapandi"];
 
 const STATUS_OPTIONS = [
   "Yeni",
+  "Aranacak",
   "TakipAramasi",
   "OfiseDavet",
   "DonusBekleniyor",
@@ -173,6 +175,14 @@ function LeadTable({ leads }: { leads: Lead[] }) {
 
               <div className="px-4 pb-5 pt-3 bg-slate-50/60 border-t border-slate-100">
                 <form action={updateLeadWithId} className="space-y-3">
+                  <LeadStatusFields
+                    statusOptions={STATUS_OPTIONS}
+                    typeOptions={TYPE_OPTIONS}
+                    defaultStatus={l.status}
+                    defaultType={l.type}
+                    defaultCallDate={l.callDate ?? ""}
+                    defaultCallTime={l.callTime ?? ""}
+                  />
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div>
                       <label className={labelClass}>Veli / İletişim Adı</label>
@@ -185,26 +195,6 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                     <div>
                       <label className={labelClass}>Telefon</label>
                       <input name="phone" defaultValue={l.phone ?? ""} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Durum</label>
-                      <select name="status" className={inputClass} defaultValue={l.status}>
-                        {STATUS_OPTIONS.map((s) => (
-                          <option key={s} value={s}>
-                            {badgeLabels[s] ?? s}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className={labelClass}>Kategori</label>
-                      <select name="type" className={inputClass} defaultValue={l.type}>
-                        {TYPE_OPTIONS.map((t) => (
-                          <option key={t} value={t}>
-                            {badgeLabels[t] ?? t}
-                          </option>
-                        ))}
-                      </select>
                     </div>
                     <div>
                       <label className={labelClass}>Öğrenci</label>
@@ -386,28 +376,12 @@ export default async function TakipListesiPage({
                     <input name="location" className={inputClass} />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={labelClass}>Durum</label>
-                    <select name="status" className={inputClass} defaultValue="Yeni">
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s}>
-                          {badgeLabels[s] ?? s}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Kategori</label>
-                    <select name="type" className={inputClass} defaultValue="Normal">
-                      {TYPE_OPTIONS.map((t) => (
-                        <option key={t} value={t}>
-                          {badgeLabels[t] ?? t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                <LeadStatusFields
+                  statusOptions={STATUS_OPTIONS}
+                  typeOptions={TYPE_OPTIONS}
+                  defaultStatus="Yeni"
+                  defaultType="Normal"
+                />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass}>İlk Temas Tarihi</label>
