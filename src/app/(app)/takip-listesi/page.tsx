@@ -54,6 +54,17 @@ function isTakipOverdue(l: Lead) {
   return l.status === "TakipAramasi" && hoursSince(l.updatedAt) > 72;
 }
 
+function isCallOverdue(l: Lead) {
+  if (l.status !== "Aranacak" || !l.callDate) return false;
+  const dt = new Date(`${l.callDate}T${l.callTime || "23:59"}`);
+  if (isNaN(dt.getTime())) return false;
+  return dt.getTime() < Date.now();
+}
+
+function isUrgent(l: Lead) {
+  return isTakipOverdue(l) || isCallOverdue(l);
+}
+
 // Serbest metin tarihleri ("gg.aa.yyyy" eski kayıtlar, "yyyy-aa-gg" <input type="date">
 // çıktısı) tek formatta gösterip input'a geri besleyebilmek için ortak yardımcılar.
 function toISOInput(dateStr?: string | null): string {
@@ -81,10 +92,8 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
     );
   }
 
-  // Takip araması geciken kayıtlar (72 saat uyarısı) en üstte görünsün.
-  const sortedLeads = [...leads].sort(
-    (a, b) => Number(isTakipOverdue(b)) - Number(isTakipOverdue(a))
-  );
+  // Geciken kayıtlar (72 saat uyarısı / arama saati geçmiş) en üstte görünsün.
+  const sortedLeads = [...leads].sort((a, b) => Number(isUrgent(b)) - Number(isUrgent(a)));
 
   return (
     <Card>
@@ -116,6 +125,7 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
           const deleteLeadWithId = deleteLead.bind(null, l.id);
           const contactDate = l.lastContactDate ?? l.firstContactDate;
           const takipOverdue = isTakipOverdue(l);
+          const callOverdue = isCallOverdue(l);
           const stale =
             OPEN_STATUSES.includes(l.status) && l.status !== "TakipAramasi" && contactDate
               ? daysSince(
@@ -129,16 +139,18 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
             <details key={l.id} className="group border-b border-slate-100 last:border-b-0">
               <summary
                 className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm transition-colors ${
-                  takipOverdue ? "bg-rose-50 hover:bg-rose-100" : "hover:bg-slate-50"
+                  takipOverdue || callOverdue ? "bg-rose-50 hover:bg-rose-100" : "hover:bg-slate-50"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
                   <Badge value={l.status} />
-                  {takipOverdue && (
+                  {(takipOverdue || callOverdue) && (
                     <span className="relative inline-flex group/tip">
                       <AlertTriangle size={14} className="text-rose-600 shrink-0" />
                       <span className="pointer-events-none absolute left-1/2 top-full -translate-x-1/2 mt-1.5 w-56 whitespace-normal rounded-md bg-slate-900 text-white text-[11px] leading-snug px-2.5 py-1.5 opacity-0 scale-95 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-100 z-30">
-                        Bu talep &quot;Takip Araması&quot; durumunda ve 72 saatten uzun süredir aranmadı — bir an önce arayıp durumu güncelleyin.
+                        {takipOverdue
+                          ? "Bu talep “Takip Araması” durumunda ve 72 saatten uzun süredir aranmadı — bir an önce arayıp durumu güncelleyin."
+                          : "Planlanan arama saati geçti — bir an önce arayıp durumu güncelleyin."}
                       </span>
                     </span>
                   )}
