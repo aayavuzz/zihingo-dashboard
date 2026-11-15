@@ -1,6 +1,7 @@
 import { AlertTriangle, Baby, ChevronDown } from "lucide-react";
 import type { Lead } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { parseTurkeyDateTime } from "@/lib/time";
 import {
   Badge,
   badgeLabels,
@@ -56,8 +57,8 @@ function isTakipOverdue(l: Lead) {
 
 function isCallOverdue(l: Lead) {
   if (l.status !== "Aranacak" || !l.callDate) return false;
-  const dt = new Date(`${l.callDate}T${l.callTime || "23:59"}`);
-  if (isNaN(dt.getTime())) return false;
+  const dt = parseTurkeyDateTime(l.callDate, l.callTime || "23:59");
+  if (!dt) return false;
   return dt.getTime() < Date.now();
 }
 

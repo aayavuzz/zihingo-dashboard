@@ -98,3 +98,30 @@ export async function updateUserProfile(userId: string, formData: FormData) {
 
   revalidatePath("/profil");
 }
+
+export async function subscribeToPush(sub: {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+}) {
+  const session = await getSession();
+  if (!session) return;
+
+  await prisma.pushSubscription.upsert({
+    where: { endpoint: sub.endpoint },
+    create: {
+      userId: session.userId,
+      endpoint: sub.endpoint,
+      p256dh: sub.keys.p256dh,
+      auth: sub.keys.auth,
+    },
+    update: {
+      userId: session.userId,
+      p256dh: sub.keys.p256dh,
+      auth: sub.keys.auth,
+    },
+  });
+}
+
+export async function unsubscribeFromPush(endpoint: string) {
+  await prisma.pushSubscription.deleteMany({ where: { endpoint } });
+}

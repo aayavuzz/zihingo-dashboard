@@ -11,6 +11,7 @@ import {
   SummaryButton,
 } from "@/components/ui";
 import { createUser, updateOwnProfile, updateUserProfile } from "./actions";
+import { PushSubscribe } from "@/components/push-subscribe";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,7 @@ export default async function ProfilPage() {
           </div>
           <Button variant="primary">Kaydet</Button>
         </form>
+        <PushSubscribe vapidPublicKey={process.env.VAPID_PUBLIC_KEY ?? ""} />
       </Card>
 
       {isSuperAdmin && (

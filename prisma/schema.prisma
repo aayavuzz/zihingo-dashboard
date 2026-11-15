@@ -18,6 +18,20 @@ model User {
   phone        String?
   photoUrl     String?
   createdAt    DateTime @default(now())
+
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // action: "create" | "update" | "delete"
@@ -170,6 +184,7 @@ model Lead {
   appointmentTime   String?
   callDate          String? // "Aranacak" durumunda planlanan arama tarihi
   callTime          String? // "Aranacak" durumunda planlanan arama saati
+  callReminderSentAt DateTime? // arama saati yaklaşınca bildirim gönderildi mi
   note              String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
