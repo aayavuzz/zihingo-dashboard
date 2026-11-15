@@ -66,8 +66,12 @@ export async function deleteTeacher(id: string) {
 export async function addLesson(teacherId: string, formData: FormData) {
   const teacher = await prisma.teacher.findUniqueOrThrow({ where: { id: teacherId } });
   const durationHrs = num(formData, "durationHrs") ?? 1;
-  const fee =
-    teacher.rateType === "PerHour" ? teacher.rate * durationHrs : teacher.rate;
+  const isMakeup = str(formData, "isMakeup") === "on";
+  const fee = isMakeup
+    ? 0
+    : teacher.rateType === "PerHour"
+      ? teacher.rate * durationHrs
+      : teacher.rate;
 
   const lesson = await prisma.lesson.create({
     data: {
@@ -79,6 +83,7 @@ export async function addLesson(teacherId: string, formData: FormData) {
       course: str(formData, "course"),
       durationHrs,
       fee,
+      isMakeup,
       note: str(formData, "note"),
       updatedByEmail: await getActorEmail(),
     },

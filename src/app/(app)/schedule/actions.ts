@@ -116,7 +116,8 @@ export async function deleteSession(id: string) {
   revalidatePath("/schedule");
 }
 
-export async function logLessonForSession(sessionId: string, dateISO: string) {
+export async function logLessonForSession(sessionId: string, dateISO: string, formData: FormData) {
+  const isMakeup = str(formData, "isMakeup") === "on";
   const session = await prisma.scheduleSession.findUniqueOrThrow({
     where: { id: sessionId },
     include: { teacher: true, groups: true, course: true },
@@ -137,8 +138,9 @@ export async function logLessonForSession(sessionId: string, dateISO: string) {
     return;
   }
 
-  const fee =
-    session.teacher.rateType === "PerHour"
+  const fee = isMakeup
+    ? 0
+    : session.teacher.rateType === "PerHour"
       ? session.teacher.rate * session.durationHrs
       : session.teacher.rate;
 
@@ -154,13 +156,14 @@ export async function logLessonForSession(sessionId: string, dateISO: string) {
       course: session.course?.name ?? session.title,
       durationHrs: session.durationHrs,
       fee,
+      isMakeup,
       updatedByEmail: await getActorEmail(),
     },
   });
   await logAudit({
     entity: "Lesson",
     action: "create",
-    label: `${session.teacher.name} · ${dateISO} · ${fee}₺ (ders işlendi)`,
+    label: `${session.teacher.name} · ${dateISO} · ${fee}₺${isMakeup ? " (telafi dersi)" : " (ders işlendi)"}`,
   });
 
   revalidatePath("/schedule");

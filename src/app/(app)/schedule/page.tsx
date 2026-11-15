@@ -597,7 +597,15 @@ function SessionPopoverBody({
                 {dateISO} için ders işlendi
               </div>
             ) : (
-              <form action={logWithId} className="mt-2">
+              <form action={logWithId} className="mt-2 space-y-1.5">
+                <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="isMakeup"
+                    className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                  />
+                  Telafi dersi (öğretmen ücret almaz)
+                </label>
                 <Button variant="secondary" className="w-full">
                   {dateISO} için ders işle (+1)
                 </Button>

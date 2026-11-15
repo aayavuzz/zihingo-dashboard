@@ -169,6 +169,14 @@ export default async function TeacherDetailPage({
                     <label className={labelClass}>Not</label>
                     <input name="note" className={inputClass} />
                   </div>
+                  <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isMakeup"
+                      className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    Telafi dersi (öğretmen ücret almaz)
+                  </label>
                   <p className="text-xs text-slate-400">
                     Ücret otomatik hesaplanır:{" "}
                     {teacher.rateType === "PerHour"
@@ -205,7 +213,14 @@ export default async function TeacherDetailPage({
                       {l.date}
                       {l.time && <span className="text-slate-400"> · {l.time}</span>}
                     </Td>
-                    <Td>{l.groupLabel ?? "—"}</Td>
+                    <Td>
+                      {l.groupLabel ?? "—"}
+                      {l.isMakeup && (
+                        <span className="ml-1.5 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-amber-50 text-amber-700 ring-1 ring-amber-600/15">
+                          Telafi
+                        </span>
+                      )}
+                    </Td>
                     <Td>{l.course ?? "—"}</Td>
                     <Td>
                       <EditableLessonFeeCell lessonId={l.id} fee={l.fee} teacherId={id} />

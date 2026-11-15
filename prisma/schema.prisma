@@ -204,6 +204,7 @@ model Lesson {
   course            String?
   durationHrs       Float            @default(1)
   fee               Float // hesaplanan / manuel ücret
+  isMakeup          Boolean          @default(false) // telafi dersi: öğretmen ücret almaz
   paid              Boolean          @default(false)
   paidDate          String?
   note              String?
