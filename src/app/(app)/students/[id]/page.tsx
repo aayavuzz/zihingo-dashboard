@@ -99,7 +99,7 @@ export default async function StudentDetailPage({
               <label className={labelClass}>Ad Soyad *</label>
               <input name="name" required defaultValue={student.name} className={inputClass} />
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <div>
                 <label className={labelClass}>Durum</label>
                 <select name="status" className={inputClass} defaultValue={student.status}>
@@ -207,7 +207,7 @@ export default async function StudentDetailPage({
         </Card>
 
         <Card className="p-5 lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div>
               <h2 className="font-semibold text-slate-800">Ödeme Takvimi</h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -225,7 +225,7 @@ export default async function StudentDetailPage({
               <summary className="list-none">
                 <SummaryButton variant="secondary">+ Taksit Ekle</SummaryButton>
               </summary>
-              <Card className="absolute right-0 mt-2 w-72 p-4 z-10">
+              <Card className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] p-4 z-10">
                 <form action={addInstallmentWithId} className="space-y-3">
                   <div>
                     <label className={labelClass}>Tutar (₺)</label>

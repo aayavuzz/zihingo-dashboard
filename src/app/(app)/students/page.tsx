@@ -78,7 +78,7 @@ export default async function StudentsPage({
             <summary className="list-none">
               <SummaryButton variant="primary">+ Öğrenci Ekle</SummaryButton>
             </summary>
-            <Card className="absolute right-0 mt-2 w-96 p-4 z-10">
+            <Card className="absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] p-4 z-10">
               <form action={createStudent} className="space-y-3">
                 <div>
                   <label className={labelClass}>Ad Soyad *</label>
@@ -164,8 +164,8 @@ export default async function StudentsPage({
         }
       />
 
-      <div className="flex items-center gap-4 mb-4">
-        <div className="flex gap-1.5">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 mb-4">
+        <div className="flex flex-wrap gap-1.5">
           {filters.map((f) => (
             <Link
               key={f.key}
@@ -198,7 +198,7 @@ export default async function StudentsPage({
             name="q"
             defaultValue={q}
             placeholder="İsimle ara..."
-            className={inputClass + " max-w-xs"}
+            className={inputClass + " w-full lg:max-w-xs"}
           />
         </form>
       </div>
@@ -209,7 +209,7 @@ export default async function StudentsPage({
         ) : (
           <div>
             <div
-              className={`${rowCols} px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide`}
+              className={`hidden sm:grid ${rowCols} px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide`}
             >
               <span>Öğrenci</span>
               <span>Durum</span>
@@ -232,61 +232,118 @@ export default async function StudentsPage({
 
               return (
                 <details key={s.id} className="group border-b border-slate-100 last:border-b-0">
-                  <summary
-                    className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors`}
-                  >
-                    <span className="flex items-center gap-1.5 min-w-0">
-                      {s.isPreschool && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
-                          <Baby size={12} />
+                  <summary className="list-none cursor-pointer text-sm hover:bg-slate-50 transition-colors">
+                    {/* Mobil kart görünümü */}
+                    <div className="sm:hidden px-4 py-3 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-1.5 min-w-0">
+                          {s.isPreschool && (
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
+                              <Baby size={12} />
+                            </span>
+                          )}
+                          <span
+                            className={`font-medium truncate ${
+                              s.isPreschool
+                                ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
+                                : "text-slate-800"
+                            }`}
+                          >
+                            {s.name}
+                          </span>
                         </span>
-                      )}
-                      <span
-                        className={`font-medium truncate ${
-                          s.isPreschool
-                            ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
-                            : "text-slate-800"
-                        }`}
-                      >
-                        {s.name}
-                      </span>
-                    </span>
-                    <span>
-                      <Badge value={s.status} />
-                    </span>
-                    <span className="text-slate-500">
-                      {s.age ?? "—"} / {s.grade ?? "—"}
-                    </span>
-                    <span className="flex items-center gap-1 flex-wrap">
-                      {s.studentCourses.length === 0 ? (
-                        <span className="text-slate-300">—</span>
-                      ) : (
-                        s.studentCourses.map((sc) => (
-                          <CourseChip
-                            key={sc.id}
-                            name={sc.course.name}
-                            color={sc.course.color}
-                            icon={sc.course.icon}
-                            active={sc.status === "Aktif"}
-                            size={24}
-                          />
-                        ))
-                      )}
-                    </span>
-                    <span>
-                      <span className="text-emerald-600 font-medium">
-                        {paid.toLocaleString("tr-TR")}₺
-                      </span>
-                      {pending > 0 && (
-                        <span className="text-amber-600 ml-1">
-                          (+{pending.toLocaleString("tr-TR")}₺)
+                        <ChevronDown
+                          size={16}
+                          className="text-slate-400 transition-transform group-open:rotate-180 shrink-0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap text-xs text-slate-500">
+                        <Badge value={s.status} />
+                        <span>
+                          {s.age ?? "—"} yaş / {s.grade ?? "—"}. sınıf
                         </span>
+                      </div>
+                      {s.studentCourses.length > 0 && (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {s.studentCourses.map((sc) => (
+                            <CourseChip
+                              key={sc.id}
+                              name={sc.course.name}
+                              color={sc.course.color}
+                              icon={sc.course.icon}
+                              active={sc.status === "Aktif"}
+                              size={22}
+                            />
+                          ))}
+                        </div>
                       )}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className="text-slate-400 transition-transform group-open:rotate-180 justify-self-end"
-                    />
+                      <div className="text-xs">
+                        <span className="text-emerald-600 font-medium">
+                          {paid.toLocaleString("tr-TR")}₺ ödendi
+                        </span>
+                        {pending > 0 && (
+                          <span className="text-amber-600 ml-1">
+                            (+{pending.toLocaleString("tr-TR")}₺ bekliyor)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Masaüstü tablo görünümü */}
+                    <div className={`hidden sm:grid ${rowCols} items-center gap-3 px-4 py-2.5`}>
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        {s.isPreschool && (
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
+                            <Baby size={12} />
+                          </span>
+                        )}
+                        <span
+                          className={`font-medium truncate ${
+                            s.isPreschool
+                              ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
+                              : "text-slate-800"
+                          }`}
+                        >
+                          {s.name}
+                        </span>
+                      </span>
+                      <span>
+                        <Badge value={s.status} />
+                      </span>
+                      <span className="text-slate-500">
+                        {s.age ?? "—"} / {s.grade ?? "—"}
+                      </span>
+                      <span className="flex items-center gap-1 flex-wrap">
+                        {s.studentCourses.length === 0 ? (
+                          <span className="text-slate-300">—</span>
+                        ) : (
+                          s.studentCourses.map((sc) => (
+                            <CourseChip
+                              key={sc.id}
+                              name={sc.course.name}
+                              color={sc.course.color}
+                              icon={sc.course.icon}
+                              active={sc.status === "Aktif"}
+                              size={24}
+                            />
+                          ))
+                        )}
+                      </span>
+                      <span>
+                        <span className="text-emerald-600 font-medium">
+                          {paid.toLocaleString("tr-TR")}₺
+                        </span>
+                        {pending > 0 && (
+                          <span className="text-amber-600 ml-1">
+                            (+{pending.toLocaleString("tr-TR")}₺)
+                          </span>
+                        )}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className="text-slate-400 transition-transform group-open:rotate-180 justify-self-end"
+                      />
+                    </div>
                   </summary>
 
                   <div className="px-4 pb-5 pt-3 bg-slate-50/60 border-t border-slate-100">

@@ -77,7 +77,7 @@ export default async function PaymentsPage() {
         />
       </div>
 
-      <div className="flex items-center gap-4 mb-4 text-xs text-slate-500">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4 text-xs text-slate-500">
         <span className="font-medium text-slate-600">Durum:</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400" /> Ödendi
@@ -88,68 +88,113 @@ export default async function PaymentsPage() {
         <span className="inline-flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-sm bg-rose-400" /> Ödenmedi
         </span>
-        <span className="text-slate-300">·</span>
-        <span>Bir tutara tıkla → düzenle / sil</span>
+        <span className="hidden sm:inline text-slate-300">·</span>
+        <span className="hidden sm:inline">Bir tutara tıkla → düzenle / sil</span>
       </div>
 
-      <Card>
-        {relevantStudents.length === 0 ? (
+      {relevantStudents.length === 0 ? (
+        <Card>
           <EmptyState text="Kayıt bulunamadı." />
-        ) : (
-          <Table>
-            <thead>
-              <tr>
-                <Th className="sticky left-0 bg-slate-50/80 z-10">Öğrenci</Th>
-                {kurColumns.map((k) => (
-                  <Th key={k} className="text-center">
-                    {k}. Kur
-                  </Th>
-                ))}
-                <Th className="text-right">Toplam</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {relevantStudents.map((s, rowIdx) => {
-                const byIndex = new Map(s.installments.map((i) => [i.index, i]));
-                const total = s.installments.reduce((a, i) => a + i.amount, 0);
-                const nextIndex = s.installments.length + 1;
-                return (
-                  <tr
-                    key={s.id}
-                    className={`hover:bg-brand-50/40 ${rowIdx % 2 === 1 ? "bg-slate-50/40" : ""} ${s.status === "Pasif" ? "opacity-60" : ""}`}
-                  >
-                    <td className="px-4 py-2 border-b border-slate-100 align-middle font-medium text-slate-800 sticky left-0 bg-inherit whitespace-nowrap">
-                      <Link href={`/students/${s.id}`} className="hover:text-brand-600 inline-flex items-center gap-2">
-                        {s.name}
-                        {s.status !== "Aktif" && <Badge value={s.status} />}
-                      </Link>
-                    </td>
-                    {kurColumns.map((k) => {
-                      const inst = byIndex.get(k);
-                      return (
-                        <td key={k} className="px-2 py-1.5 border-b border-slate-100 align-middle text-center">
-                          {inst ? (
-                            <EditableInstallmentCell installment={inst} studentId={s.id} />
-                          ) : k === nextIndex ? (
-                            <div className="flex justify-center">
-                              <AddInstallmentButton studentId={s.id} nextIndex={nextIndex} />
-                            </div>
-                          ) : (
-                            <span className="text-slate-200">—</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                    <td className="px-4 py-2 border-b border-slate-100 align-middle text-right font-semibold text-slate-800 whitespace-nowrap">
+        </Card>
+      ) : (
+        <>
+          {/* Mobil: kur matrisi telefon ekranında yatay kaydırmayla kullanılamıyor,
+              bu yüzden her öğrenci için kur'ları saran bir kart gösteriyoruz. */}
+          <div className="sm:hidden space-y-3">
+            {relevantStudents.map((s) => {
+              const byIndex = new Map(s.installments.map((i) => [i.index, i]));
+              const total = s.installments.reduce((a, i) => a + i.amount, 0);
+              const nextIndex = s.installments.length + 1;
+              const filledKurs = kurColumns.filter((k) => byIndex.has(k));
+              return (
+                <Card key={s.id} className={`p-3.5 ${s.status === "Pasif" ? "opacity-60" : ""}`}>
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                    <Link
+                      href={`/students/${s.id}`}
+                      className="font-medium text-slate-800 hover:text-brand-600 inline-flex items-center gap-2 min-w-0"
+                    >
+                      <span className="truncate">{s.name}</span>
+                      {s.status !== "Aktif" && <Badge value={s.status} />}
+                    </Link>
+                    <span className="text-sm font-semibold text-slate-800 shrink-0">
                       {formatTL(total)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        )}
-      </Card>
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {filledKurs.map((k) => (
+                      <div key={k} className="flex flex-col items-center gap-1">
+                        <span className="text-[10px] text-slate-400">{k}. Kur</span>
+                        <EditableInstallmentCell installment={byIndex.get(k)!} studentId={s.id} />
+                      </div>
+                    ))}
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] text-slate-400">{nextIndex}. Kur</span>
+                      <AddInstallmentButton studentId={s.id} nextIndex={nextIndex} />
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          <Card className="hidden sm:block">
+            <Table>
+              <thead>
+                <tr>
+                  <Th className="sticky left-0 bg-slate-50/80 z-10 w-40 min-w-40 max-w-40">
+                    Öğrenci
+                  </Th>
+                  {kurColumns.map((k) => (
+                    <Th key={k} className="text-center">
+                      {k}. Kur
+                    </Th>
+                  ))}
+                  <Th className="text-right">Toplam</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {relevantStudents.map((s, rowIdx) => {
+                  const byIndex = new Map(s.installments.map((i) => [i.index, i]));
+                  const total = s.installments.reduce((a, i) => a + i.amount, 0);
+                  const nextIndex = s.installments.length + 1;
+                  return (
+                    <tr
+                      key={s.id}
+                      className={`hover:bg-brand-50/40 ${rowIdx % 2 === 1 ? "bg-slate-50/40" : ""} ${s.status === "Pasif" ? "opacity-60" : ""}`}
+                    >
+                      <td className="px-4 py-2 border-b border-slate-100 align-middle font-medium text-slate-800 sticky left-0 bg-inherit w-40 min-w-40 max-w-40 overflow-hidden text-ellipsis whitespace-nowrap">
+                        <Link href={`/students/${s.id}`} className="hover:text-brand-600 inline-flex items-center gap-2 max-w-full">
+                          <span className="truncate">{s.name}</span>
+                          {s.status !== "Aktif" && <Badge value={s.status} />}
+                        </Link>
+                      </td>
+                      {kurColumns.map((k) => {
+                        const inst = byIndex.get(k);
+                        return (
+                          <td key={k} className="px-2 py-1.5 border-b border-slate-100 align-middle text-center">
+                            {inst ? (
+                              <EditableInstallmentCell installment={inst} studentId={s.id} />
+                            ) : k === nextIndex ? (
+                              <div className="flex justify-center">
+                                <AddInstallmentButton studentId={s.id} nextIndex={nextIndex} />
+                              </div>
+                            ) : (
+                              <span className="text-slate-200">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td className="px-4 py-2 border-b border-slate-100 align-middle text-right font-semibold text-slate-800 whitespace-nowrap">
+                        {formatTL(total)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
