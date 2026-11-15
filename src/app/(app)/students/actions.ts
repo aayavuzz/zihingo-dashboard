@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getActorEmail } from "@/lib/session";
+import { logAudit } from "@/lib/audit";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -36,6 +37,7 @@ export async function createStudent(formData: FormData) {
       note: str(formData, "note"),
     },
   });
+  await logAudit({ entity: "Student", action: "create", label: name });
 
   revalidatePath("/students");
 }
@@ -63,13 +65,16 @@ export async function updateStudent(id: string, formData: FormData) {
       updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({ entity: "Student", action: "update", label: name });
 
   revalidatePath("/students");
   revalidatePath(`/students/${id}`);
 }
 
 export async function deleteStudent(id: string) {
+  const student = await prisma.student.findUnique({ where: { id } });
   await prisma.student.delete({ where: { id } });
+  await logAudit({ entity: "Student", action: "delete", label: student?.name });
   revalidatePath("/students");
   redirect("/students");
 }
@@ -77,6 +82,7 @@ export async function deleteStudent(id: string) {
 export async function addInstallment(studentId: string, formData: FormData) {
   const amount = num(formData, "amount") ?? 0;
   const lastIndex = await prisma.installment.count({ where: { studentId } });
+  const student = await prisma.student.findUnique({ where: { id: studentId } });
 
   await prisma.installment.create({
     data: {
@@ -86,7 +92,13 @@ export async function addInstallment(studentId: string, formData: FormData) {
       status: str(formData, "status") ?? "Bekliyor",
       note: str(formData, "note"),
       paidDate: str(formData, "paidDate"),
+      updatedByEmail: await getActorEmail(),
     },
+  });
+  await logAudit({
+    entity: "Installment",
+    action: "create",
+    label: `${student?.name ?? "?"} · ${lastIndex + 1}. Kur · ${amount}₺`,
   });
 
   revalidatePath(`/students/${studentId}`);
@@ -98,9 +110,15 @@ export async function updateInstallmentStatus(
   studentId: string,
   status: string
 ) {
-  await prisma.installment.update({
+  const inst = await prisma.installment.update({
     where: { id: installmentId },
     data: { status, updatedByEmail: await getActorEmail() },
+    include: { student: true },
+  });
+  await logAudit({
+    entity: "Installment",
+    action: "update",
+    label: `${inst.student.name} · ${inst.index}. Kur · durum: ${status}`,
   });
   revalidatePath(`/students/${studentId}`);
   revalidatePath("/payments");
@@ -111,7 +129,7 @@ export async function updateInstallment(
   studentId: string,
   formData: FormData
 ) {
-  await prisma.installment.update({
+  const inst = await prisma.installment.update({
     where: { id: installmentId },
     data: {
       amount: num(formData, "amount") ?? 0,
@@ -120,13 +138,28 @@ export async function updateInstallment(
       paidDate: str(formData, "paidDate") ?? null,
       updatedByEmail: await getActorEmail(),
     },
+    include: { student: true },
+  });
+  await logAudit({
+    entity: "Installment",
+    action: "update",
+    label: `${inst.student.name} · ${inst.index}. Kur · ${inst.amount}₺`,
   });
   revalidatePath(`/students/${studentId}`);
   revalidatePath("/payments");
 }
 
 export async function deleteInstallment(installmentId: string, studentId: string) {
+  const inst = await prisma.installment.findUnique({
+    where: { id: installmentId },
+    include: { student: true },
+  });
   await prisma.installment.delete({ where: { id: installmentId } });
+  await logAudit({
+    entity: "Installment",
+    action: "delete",
+    label: inst ? `${inst.student.name} · ${inst.index}. Kur · ${inst.amount}₺` : undefined,
+  });
   revalidatePath(`/students/${studentId}`);
   revalidatePath("/payments");
 }
@@ -144,8 +177,14 @@ export async function addStudentCourse(studentId: string, formData: FormData) {
     });
   }
 
-  await prisma.studentCourse.create({
+  const sc = await prisma.studentCourse.create({
     data: { studentId, courseId, status },
+    include: { student: true, course: true },
+  });
+  await logAudit({
+    entity: "StudentCourse",
+    action: "create",
+    label: `${sc.student.name} · ${sc.course.name}`,
   });
 
   revalidatePath("/students");
@@ -163,16 +202,31 @@ export async function updateStudentCourseStatus(
       data: { status: "Tamamlandi" },
     });
   }
-  await prisma.studentCourse.update({
+  const sc = await prisma.studentCourse.update({
     where: { id: studentCourseId },
     data: { status, updatedByEmail: await getActorEmail() },
+    include: { student: true, course: true },
+  });
+  await logAudit({
+    entity: "StudentCourse",
+    action: "update",
+    label: `${sc.student.name} · ${sc.course.name} · durum: ${status}`,
   });
   revalidatePath("/students");
   revalidatePath(`/students/${studentId}`);
 }
 
 export async function removeStudentCourse(studentCourseId: string, studentId: string) {
+  const sc = await prisma.studentCourse.findUnique({
+    where: { id: studentCourseId },
+    include: { student: true, course: true },
+  });
   await prisma.studentCourse.delete({ where: { id: studentCourseId } });
+  await logAudit({
+    entity: "StudentCourse",
+    action: "delete",
+    label: sc ? `${sc.student.name} · ${sc.course.name}` : undefined,
+  });
   revalidatePath("/students");
   revalidatePath(`/students/${studentId}`);
 }

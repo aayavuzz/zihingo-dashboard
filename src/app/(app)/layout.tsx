@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ListChecks,
   LogOut,
+  ScrollText,
   Users,
   UsersRound,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/payments", label: "Ödemeler", icon: <CreditCard {...iconProps} /> },
   { href: "/schedule", label: "Haftalık Program", icon: <CalendarDays {...iconProps} /> },
   { href: "/teachers", label: "Öğretmenler", icon: <Users {...iconProps} />, adminOnly: true },
+  { href: "/loglar", label: "Loglar", icon: <ScrollText {...iconProps} />, adminOnly: true },
 ];
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {

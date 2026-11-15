@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { weekdayNameFromDate } from "@/lib/calendar";
 import { getActorEmail } from "@/lib/session";
+import { logAudit } from "@/lib/audit";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -62,8 +63,10 @@ export async function createSession(formData: FormData) {
       teacherId: str(formData, "teacherId"),
       durationHrs: num(formData, "durationHrs") ?? 1,
       note: str(formData, "note"),
+      updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({ entity: "ScheduleSession", action: "create", label: `${title} · ${date} ${time}` });
 
   revalidatePath("/schedule");
 }
@@ -97,12 +100,19 @@ export async function updateSession(sessionId: string, formData: FormData) {
       updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({ entity: "ScheduleSession", action: "update", label: `${title} · ${date} ${time}` });
 
   revalidatePath("/schedule");
 }
 
 export async function deleteSession(id: string) {
+  const session = await prisma.scheduleSession.findUnique({ where: { id } });
   await prisma.scheduleSession.delete({ where: { id } });
+  await logAudit({
+    entity: "ScheduleSession",
+    action: "delete",
+    label: session ? `${session.title} · ${session.date} ${session.time}` : undefined,
+  });
   revalidatePath("/schedule");
 }
 
@@ -147,6 +157,11 @@ export async function logLessonForSession(sessionId: string, dateISO: string) {
       updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({
+    entity: "Lesson",
+    action: "create",
+    label: `${session.teacher.name} · ${dateISO} · ${fee}₺ (ders işlendi)`,
+  });
 
   revalidatePath("/schedule");
   revalidatePath("/teachers");
@@ -154,8 +169,16 @@ export async function logLessonForSession(sessionId: string, dateISO: string) {
 }
 
 export async function deleteLoggedLesson(lessonId: string) {
-  const lesson = await prisma.lesson.findUniqueOrThrow({ where: { id: lessonId } });
+  const lesson = await prisma.lesson.findUniqueOrThrow({
+    where: { id: lessonId },
+    include: { teacher: true },
+  });
   await prisma.lesson.delete({ where: { id: lessonId } });
+  await logAudit({
+    entity: "Lesson",
+    action: "delete",
+    label: `${lesson.teacher.name} · ${lesson.date} · ${lesson.fee}₺`,
+  });
   revalidatePath("/schedule");
   revalidatePath("/teachers");
   revalidatePath(`/teachers/${lesson.teacherId}`);

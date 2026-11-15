@@ -17,6 +17,20 @@ model User {
   createdAt    DateTime @default(now())
 }
 
+// action: "create" | "update" | "delete"
+// entity: "Student" | "Installment" | "Lead" | "Lesson" | "ScheduleSession" | "Teacher" | "Group" | "Course" | "StudentCourse"
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorEmail String?
+  entity     String
+  action     String
+  label      String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity])
+}
+
 // Durum: "Aktif" | "Bekleyen" | "Pasif"
 model Student {
   id         String   @id @default(cuid())

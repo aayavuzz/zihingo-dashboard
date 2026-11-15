@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getActorEmail } from "@/lib/session";
+import { logAudit } from "@/lib/audit";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -15,10 +16,11 @@ function num(formData: FormData, key: string) {
 }
 
 export async function createLead(formData: FormData) {
+  const contactName = str(formData, "contactName");
   await prisma.lead.create({
     data: {
       type: str(formData, "type") ?? "Normal",
-      contactName: str(formData, "contactName"),
+      contactName,
       phone: str(formData, "phone"),
       status: str(formData, "status") ?? "Yeni",
       studentName: str(formData, "studentName"),
@@ -31,18 +33,21 @@ export async function createLead(formData: FormData) {
       appointmentDate: str(formData, "appointmentDate"),
       appointmentTime: str(formData, "appointmentTime"),
       note: str(formData, "note"),
+      updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({ entity: "Lead", action: "create", label: contactName });
 
   revalidatePath("/takip-listesi");
 }
 
 export async function updateLead(id: string, formData: FormData) {
+  const contactName = str(formData, "contactName");
   await prisma.lead.update({
     where: { id },
     data: {
       type: str(formData, "type") ?? "Normal",
-      contactName: str(formData, "contactName") ?? null,
+      contactName: contactName ?? null,
       phone: str(formData, "phone") ?? null,
       status: str(formData, "status") ?? "Yeni",
       studentName: str(formData, "studentName") ?? null,
@@ -58,11 +63,14 @@ export async function updateLead(id: string, formData: FormData) {
       updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({ entity: "Lead", action: "update", label: contactName });
 
   revalidatePath("/takip-listesi");
 }
 
 export async function deleteLead(id: string) {
+  const lead = await prisma.lead.findUnique({ where: { id } });
   await prisma.lead.delete({ where: { id } });
+  await logAudit({ entity: "Lead", action: "delete", label: lead?.contactName });
   revalidatePath("/takip-listesi");
 }

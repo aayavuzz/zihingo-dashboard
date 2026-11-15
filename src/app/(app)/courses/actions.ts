@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getActorEmail } from "@/lib/session";
+import { logAudit } from "@/lib/audit";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -20,6 +21,7 @@ export async function createCourse(formData: FormData) {
       icon: str(formData, "icon") ?? "BookOpen",
     },
   });
+  await logAudit({ entity: "Course", action: "create", label: name });
 
   revalidatePath("/courses");
   revalidatePath("/students");
@@ -38,13 +40,16 @@ export async function updateCourse(courseId: string, formData: FormData) {
       updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({ entity: "Course", action: "update", label: name });
 
   revalidatePath("/courses");
   revalidatePath("/students");
 }
 
 export async function deleteCourse(courseId: string) {
+  const course = await prisma.course.findUnique({ where: { id: courseId } });
   await prisma.course.delete({ where: { id: courseId } });
+  await logAudit({ entity: "Course", action: "delete", label: course?.name });
   revalidatePath("/courses");
   revalidatePath("/students");
 }

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getActorEmail } from "@/lib/session";
+import { logAudit } from "@/lib/audit";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -28,6 +29,7 @@ export async function createTeacher(formData: FormData) {
       note: str(formData, "note"),
     },
   });
+  await logAudit({ entity: "Teacher", action: "create", label: name });
 
   revalidatePath("/teachers");
 }
@@ -47,13 +49,16 @@ export async function updateTeacher(id: string, formData: FormData) {
       updatedByEmail: await getActorEmail(),
     },
   });
+  await logAudit({ entity: "Teacher", action: "update", label: name });
 
   revalidatePath("/teachers");
   revalidatePath(`/teachers/${id}`);
 }
 
 export async function deleteTeacher(id: string) {
+  const teacher = await prisma.teacher.findUnique({ where: { id } });
   await prisma.teacher.delete({ where: { id } });
+  await logAudit({ entity: "Teacher", action: "delete", label: teacher?.name });
   revalidatePath("/teachers");
   redirect("/teachers");
 }
@@ -64,7 +69,7 @@ export async function addLesson(teacherId: string, formData: FormData) {
   const fee =
     teacher.rateType === "PerHour" ? teacher.rate * durationHrs : teacher.rate;
 
-  await prisma.lesson.create({
+  const lesson = await prisma.lesson.create({
     data: {
       teacherId,
       date: str(formData, "date") ?? new Date().toISOString().slice(0, 10),
@@ -75,7 +80,13 @@ export async function addLesson(teacherId: string, formData: FormData) {
       durationHrs,
       fee,
       note: str(formData, "note"),
+      updatedByEmail: await getActorEmail(),
     },
+  });
+  await logAudit({
+    entity: "Lesson",
+    action: "create",
+    label: `${teacher.name} · ${lesson.date} · ${fee}₺`,
   });
 
   revalidatePath(`/teachers/${teacherId}`);
@@ -86,29 +97,50 @@ export async function updateLessonFee(lessonId: string, teacherId: string, formD
   const fee = num(formData, "fee");
   if (fee === undefined) return;
 
-  await prisma.lesson.update({
+  const lesson = await prisma.lesson.update({
     where: { id: lessonId },
     data: { fee, updatedByEmail: await getActorEmail() },
+    include: { teacher: true },
+  });
+  await logAudit({
+    entity: "Lesson",
+    action: "update",
+    label: `${lesson.teacher.name} · ${lesson.date} · ücret: ${fee}₺`,
   });
   revalidatePath(`/teachers/${teacherId}`);
   revalidatePath("/teachers");
 }
 
 export async function toggleLessonPaid(lessonId: string, teacherId: string, paid: boolean) {
-  await prisma.lesson.update({
+  const lesson = await prisma.lesson.update({
     where: { id: lessonId },
     data: {
       paid,
       paidDate: paid ? new Date().toISOString().slice(0, 10) : null,
       updatedByEmail: await getActorEmail(),
     },
+    include: { teacher: true },
+  });
+  await logAudit({
+    entity: "Lesson",
+    action: "update",
+    label: `${lesson.teacher.name} · ${lesson.date} · ${paid ? "ödendi" : "ödenmedi"} işaretlendi`,
   });
   revalidatePath(`/teachers/${teacherId}`);
   revalidatePath("/teachers");
 }
 
 export async function deleteLesson(lessonId: string, teacherId: string) {
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    include: { teacher: true },
+  });
   await prisma.lesson.delete({ where: { id: lessonId } });
+  await logAudit({
+    entity: "Lesson",
+    action: "delete",
+    label: lesson ? `${lesson.teacher.name} · ${lesson.date} · ${lesson.fee}₺` : undefined,
+  });
   revalidatePath(`/teachers/${teacherId}`);
   revalidatePath("/teachers");
 }
