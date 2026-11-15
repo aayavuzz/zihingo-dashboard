@@ -12,9 +12,16 @@ export async function createSessionToken(
   userId: string,
   role: string,
   email: string,
-  name?: string | null
+  name?: string | null,
+  photoUrl?: string | null
 ) {
-  return await new SignJWT({ sub: userId, role, email, name: name ?? undefined })
+  return await new SignJWT({
+    sub: userId,
+    role,
+    email,
+    name: name ?? undefined,
+    photoUrl: photoUrl ?? undefined,
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")

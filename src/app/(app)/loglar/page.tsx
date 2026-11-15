@@ -15,6 +15,7 @@ const entityLabels: Record<string, string> = {
   Group: "Grup",
   Course: "Kur",
   StudentCourse: "Öğrenci Kursu",
+  User: "Kullanıcı",
 };
 
 const actionLabels: Record<string, { text: string; tone: string }> = {

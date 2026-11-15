@@ -15,11 +15,13 @@ model User {
   passwordHash String
   role         String   @default("admin")
   name         String?
+  phone        String?
+  photoUrl     String?
   createdAt    DateTime @default(now())
 }
 
 // action: "create" | "update" | "delete"
-// entity: "Student" | "Installment" | "Lead" | "Lesson" | "ScheduleSession" | "Teacher" | "Group" | "Course" | "StudentCourse"
+// entity: "Student" | "Installment" | "Lead" | "Lesson" | "ScheduleSession" | "Teacher" | "Group" | "Course" | "StudentCourse" | "User"
 model AuditLog {
   id         String   @id @default(cuid())
   actorEmail String?
@@ -179,7 +181,6 @@ model Teacher {
   id       String  @id @default(cuid())
   name     String
   phone    String?
-  photoUrl String?
   rateType String  @default("PerLesson")
   rate     Float   @default(0)
   note     String?

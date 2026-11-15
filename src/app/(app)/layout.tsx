@@ -55,9 +55,18 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         </nav>
         <div className="border-t border-slate-100">
           <div className="px-5 py-3 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold shrink-0">
-              {(session?.name ?? session?.email ?? "?").charAt(0).toUpperCase()}
-            </div>
+            {session?.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={session.photoUrl}
+                alt=""
+                className="w-8 h-8 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold shrink-0">
+                {(session?.name ?? session?.email ?? "?").charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="min-w-0">
               <div className="text-xs font-semibold text-slate-700 truncate">
                 {session?.name ?? session?.email ?? "—"}
