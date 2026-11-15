@@ -13,6 +13,7 @@ export async function getSession() {
     userId: payload.sub as string,
     role: (payload.role as string) ?? "admin",
     email: payload.email as string | undefined,
+    name: payload.name as string | undefined,
   };
 }
 

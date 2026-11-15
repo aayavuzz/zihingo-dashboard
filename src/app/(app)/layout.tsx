@@ -7,6 +7,7 @@ import {
   ListChecks,
   LogOut,
   ScrollText,
+  User,
   Users,
   UsersRound,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/courses", label: "Kurlar", icon: <Layers {...iconProps} /> },
   { href: "/payments", label: "Ödemeler", icon: <CreditCard {...iconProps} />, adminOnly: true },
   { href: "/schedule", label: "Haftalık Program", icon: <CalendarDays {...iconProps} /> },
+  { href: "/profil", label: "Profil", icon: <User {...iconProps} /> },
   { href: "/teachers", label: "Öğretmenler", icon: <Users {...iconProps} />, adminOnly: true },
   { href: "/loglar", label: "Loglar", icon: <ScrollText {...iconProps} />, superAdminOnly: true },
 ];
@@ -52,6 +54,23 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           ))}
         </nav>
         <div className="border-t border-slate-100">
+          <div className="px-5 py-3 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold shrink-0">
+              {(session?.name ?? session?.email ?? "?").charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-slate-700 truncate">
+                {session?.name ?? session?.email ?? "—"}
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">
+                {session?.role === "superadmin"
+                  ? "Süper Admin"
+                  : session?.role === "admin"
+                    ? "Admin"
+                    : "Öğretmen"}
+              </div>
+            </div>
+          </div>
           <form action={logout}>
             <button
               type="submit"

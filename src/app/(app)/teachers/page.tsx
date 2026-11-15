@@ -43,6 +43,10 @@ export default async function TeachersPage() {
                   <label className={labelClass}>Telefon</label>
                   <input name="phone" className={inputClass} />
                 </div>
+                <div>
+                  <label className={labelClass}>Fotoğraf URL</label>
+                  <input name="photoUrl" placeholder="https://..." className={inputClass} />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass}>Ücret Tipi</label>

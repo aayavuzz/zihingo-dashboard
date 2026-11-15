@@ -61,6 +61,20 @@ export default async function TeacherDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-5 lg:col-span-1">
           <h2 className="font-semibold text-slate-800 mb-4">Öğretmen Bilgileri</h2>
+          <div className="flex justify-center mb-4">
+            {teacher.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={teacher.photoUrl}
+                alt={teacher.name}
+                className="w-20 h-20 rounded-full object-cover ring-1 ring-slate-200"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white flex items-center justify-center text-2xl font-bold">
+                {teacher.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
           <form action={updateTeacherWithId} className="space-y-3">
             <div>
               <label className={labelClass}>Ad Soyad *</label>
@@ -69,6 +83,15 @@ export default async function TeacherDetailPage({
             <div>
               <label className={labelClass}>Telefon</label>
               <input name="phone" defaultValue={teacher.phone ?? ""} className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Fotoğraf URL</label>
+              <input
+                name="photoUrl"
+                defaultValue={teacher.photoUrl ?? ""}
+                placeholder="https://..."
+                className={inputClass}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

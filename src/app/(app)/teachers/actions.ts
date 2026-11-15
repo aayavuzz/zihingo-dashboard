@@ -24,6 +24,7 @@ export async function createTeacher(formData: FormData) {
     data: {
       name,
       phone: str(formData, "phone"),
+      photoUrl: str(formData, "photoUrl"),
       rateType: str(formData, "rateType") ?? "PerLesson",
       rate: num(formData, "rate") ?? 0,
       note: str(formData, "note"),
@@ -32,6 +33,7 @@ export async function createTeacher(formData: FormData) {
   await logAudit({ entity: "Teacher", action: "create", label: name });
 
   revalidatePath("/teachers");
+  revalidatePath("/profil");
 }
 
 export async function updateTeacher(id: string, formData: FormData) {
@@ -43,6 +45,7 @@ export async function updateTeacher(id: string, formData: FormData) {
     data: {
       name,
       phone: str(formData, "phone"),
+      photoUrl: str(formData, "photoUrl") ?? null,
       rateType: str(formData, "rateType") ?? "PerLesson",
       rate: num(formData, "rate") ?? 0,
       note: str(formData, "note"),
@@ -53,6 +56,7 @@ export async function updateTeacher(id: string, formData: FormData) {
 
   revalidatePath("/teachers");
   revalidatePath(`/teachers/${id}`);
+  revalidatePath("/profil");
 }
 
 export async function deleteTeacher(id: string) {
