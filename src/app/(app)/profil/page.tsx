@@ -1,8 +1,16 @@
 import { ChevronDown } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { Button, Card, inputClass, labelClass, PageHeader } from "@/components/ui";
-import { updateOwnProfile, updateUserProfile } from "./actions";
+import {
+  Button,
+  Card,
+  EmptyState,
+  inputClass,
+  labelClass,
+  PageHeader,
+  SummaryButton,
+} from "@/components/ui";
+import { createUser, updateOwnProfile, updateUserProfile } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -84,11 +92,63 @@ export default async function ProfilPage() {
         </form>
       </Card>
 
-      {isSuperAdmin && others.length > 0 && (
+      {isSuperAdmin && (
         <div>
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-            Tüm Kullanıcılar ({others.length})
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              Tüm Kullanıcılar ({others.length})
+            </h2>
+            <details className="relative">
+              <summary className="list-none">
+                <SummaryButton variant="primary">+ Kullanıcı Ekle</SummaryButton>
+              </summary>
+              <Card className="absolute right-0 mt-2 w-80 p-4 z-10">
+                <form action={createUser} className="space-y-3">
+                  <div>
+                    <label className={labelClass}>E-posta *</label>
+                    <input name="email" type="email" required className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Şifre *</label>
+                    <input name="password" required className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Ad Soyad</label>
+                    <input name="name" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Telefon</label>
+                    <input name="phone" className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Fotoğraf</label>
+                    <input
+                      name="photo"
+                      type="file"
+                      accept="image/*"
+                      className={`${inputClass} file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-brand-700 hover:file:bg-brand-100`}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Rol</label>
+                    <select name="role" defaultValue="teacher" className={inputClass}>
+                      <option value="teacher">Öğretmen</option>
+                      <option value="admin">Admin</option>
+                      <option value="superadmin">Süper Admin</option>
+                    </select>
+                  </div>
+                  <Button variant="primary" className="w-full">
+                    Ekle
+                  </Button>
+                </form>
+              </Card>
+            </details>
+          </div>
+          {others.length === 0 ? (
+            <Card>
+              <EmptyState text="Henüz başka kullanıcı yok." />
+            </Card>
+          ) : (
           <Card>
             {others.map((u) => {
               const updateWithId = updateUserProfile.bind(null, u.id);
@@ -142,6 +202,7 @@ export default async function ProfilPage() {
               );
             })}
           </Card>
+          )}
         </div>
       )}
     </div>

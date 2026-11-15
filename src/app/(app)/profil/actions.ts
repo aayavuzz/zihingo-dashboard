@@ -1,5 +1,6 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { put } from "@vercel/blob";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -38,6 +39,33 @@ export async function updateOwnProfile(formData: FormData) {
 
   // Sidebar'daki isim/fotoğraf anında güncellensin diye oturumu tazele.
   await issueSession(user);
+
+  revalidatePath("/profil");
+}
+
+export async function createUser(formData: FormData) {
+  const session = await getSession();
+  if (session?.role !== "superadmin") throw new Error("Yetkiniz yok");
+
+  const email = str(formData, "email")?.toLowerCase();
+  const password = str(formData, "password");
+  if (!email || !password) throw new Error("E-posta ve şifre zorunludur");
+
+  const name = str(formData, "name") ?? null;
+  const phone = str(formData, "phone") ?? null;
+  const role = str(formData, "role") ?? "teacher";
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: { email, passwordHash, name, phone, role },
+  });
+
+  const newPhotoUrl = await uploadPhotoIfPresent(formData, user.id);
+  if (newPhotoUrl) {
+    await prisma.user.update({ where: { id: user.id }, data: { photoUrl: newPhotoUrl } });
+  }
+
+  await logAudit({ entity: "User", action: "create", label: `${email} (${role})` });
 
   revalidatePath("/profil");
 }
