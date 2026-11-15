@@ -72,12 +72,12 @@ export default async function ProfilPage() {
             <input name="phone" defaultValue={me.phone ?? ""} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Fotoğraf URL</label>
+            <label className={labelClass}>Fotoğraf</label>
             <input
-              name="photoUrl"
-              defaultValue={me.photoUrl ?? ""}
-              placeholder="https://..."
-              className={inputClass}
+              name="photo"
+              type="file"
+              accept="image/*"
+              className={`${inputClass} file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-brand-700 hover:file:bg-brand-100`}
             />
           </div>
           <Button variant="primary">Kaydet</Button>
@@ -119,12 +119,12 @@ export default async function ProfilPage() {
                         <input name="phone" defaultValue={u.phone ?? ""} className={inputClass} />
                       </div>
                       <div>
-                        <label className={labelClass}>Fotoğraf URL</label>
+                        <label className={labelClass}>Fotoğraf</label>
                         <input
-                          name="photoUrl"
-                          defaultValue={u.photoUrl ?? ""}
-                          placeholder="https://..."
-                          className={inputClass}
+                          name="photo"
+                          type="file"
+                          accept="image/*"
+                          className={`${inputClass} file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-brand-700 hover:file:bg-brand-100`}
                         />
                       </div>
                       <div>
