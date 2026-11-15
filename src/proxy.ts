@@ -21,6 +21,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  if (session.role === "teacher" && pathname.startsWith("/payments")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (session.role !== "superadmin" && pathname.startsWith("/loglar")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   return NextResponse.next();
 }
 

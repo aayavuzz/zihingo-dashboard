@@ -4,11 +4,11 @@ import { prisma } from "../src/lib/db";
 async function main() {
   const [, , email, password, role = "admin"] = process.argv;
   if (!email || !password) {
-    console.error("Kullanım: npx tsx scripts/create-admin.ts <email> <şifre> [admin|teacher]");
+    console.error("Kullanım: npx tsx scripts/create-admin.ts <email> <şifre> [superadmin|admin|teacher]");
     process.exit(1);
   }
-  if (role !== "admin" && role !== "teacher") {
-    console.error('Rol "admin" veya "teacher" olmalı');
+  if (role !== "superadmin" && role !== "admin" && role !== "teacher") {
+    console.error('Rol "superadmin", "admin" veya "teacher" olmalı');
     process.exit(1);
   }
 

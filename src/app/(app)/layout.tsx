@@ -21,15 +21,19 @@ const navItems = [
   { href: "/students", label: "Öğrenciler", icon: <GraduationCap {...iconProps} /> },
   { href: "/groups", label: "Gruplar", icon: <UsersRound {...iconProps} /> },
   { href: "/courses", label: "Kurlar", icon: <Layers {...iconProps} /> },
-  { href: "/payments", label: "Ödemeler", icon: <CreditCard {...iconProps} /> },
+  { href: "/payments", label: "Ödemeler", icon: <CreditCard {...iconProps} />, adminOnly: true },
   { href: "/schedule", label: "Haftalık Program", icon: <CalendarDays {...iconProps} /> },
   { href: "/teachers", label: "Öğretmenler", icon: <Users {...iconProps} />, adminOnly: true },
-  { href: "/loglar", label: "Loglar", icon: <ScrollText {...iconProps} />, adminOnly: true },
+  { href: "/loglar", label: "Loglar", icon: <ScrollText {...iconProps} />, superAdminOnly: true },
 ];
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const session = await getSession();
-  const visibleNavItems = navItems.filter((item) => !item.adminOnly || session?.role !== "teacher");
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.adminOnly && session?.role === "teacher") return false;
+    if (item.superAdminOnly && session?.role !== "superadmin") return false;
+    return true;
+  });
 
   return (
     <div className="min-h-full flex bg-slate-100 text-slate-900">

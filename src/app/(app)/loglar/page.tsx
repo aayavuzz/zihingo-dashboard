@@ -31,7 +31,7 @@ export default async function LoglarPage({
   searchParams: Promise<{ entity?: string }>;
 }) {
   const session = await getSession();
-  if (session?.role !== "admin") redirect("/");
+  if (session?.role !== "superadmin") redirect("/");
 
   const { entity } = await searchParams;
 
