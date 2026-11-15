@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getActorEmail } from "@/lib/session";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -34,6 +35,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
       name,
       color: str(formData, "color") ?? "#502e9f",
       icon: str(formData, "icon") ?? "BookOpen",
+      updatedByEmail: await getActorEmail(),
     },
   });
 

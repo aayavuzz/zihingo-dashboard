@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   EmptyState,
+  LastEditedBy,
   PageHeader,
   SummaryButton,
   inputClass,
@@ -149,8 +150,9 @@ export default async function GroupsPage() {
                         <label className={labelClass}>Not</label>
                         <input name="note" defaultValue={g.note ?? ""} className={inputClass} />
                       </div>
-                      <div className="flex gap-2 pt-1">
+                      <div className="flex items-center gap-3 pt-1">
                         <Button variant="primary">Kaydet</Button>
+                        <LastEditedBy email={g.updatedByEmail} date={g.updatedAt} />
                       </div>
                     </form>
                     <form action={deleteWithId} className="mt-3">

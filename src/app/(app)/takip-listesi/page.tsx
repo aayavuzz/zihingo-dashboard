@@ -6,6 +6,7 @@ import {
   badgeLabels,
   Card,
   EmptyState,
+  LastEditedBy,
   PageHeader,
   SummaryButton,
   Button,
@@ -266,8 +267,9 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                       <input name="note" defaultValue={l.note ?? ""} className={inputClass} />
                     </div>
                   </div>
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex items-center gap-3 pt-1">
                     <Button variant="primary">Kaydet</Button>
+                    <LastEditedBy email={l.updatedByEmail} date={l.updatedAt} />
                   </div>
                 </form>
                 <form action={deleteLeadWithId} className="mt-3">

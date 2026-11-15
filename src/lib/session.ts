@@ -12,5 +12,12 @@ export async function getSession() {
   return {
     userId: payload.sub as string,
     role: (payload.role as string) ?? "admin",
+    email: payload.email as string | undefined,
   };
+}
+
+// Server action'larda "son düzenleyen" alanını doldurmak için.
+export async function getActorEmail() {
+  const session = await getSession();
+  return session?.email ?? null;
 }

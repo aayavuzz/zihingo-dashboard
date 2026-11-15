@@ -36,6 +36,7 @@ model Student {
   note       String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  updatedByEmail String?
 
   installments   Installment[]
   studentCourses StudentCourse[]
@@ -49,7 +50,9 @@ model Group {
   id        String   @id @default(cuid())
   name      String   @unique
   note      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  updatedByEmail String?
 
   students Student[]
   sessions ScheduleSession[]
@@ -61,7 +64,9 @@ model Course {
   name      String   @unique
   color     String   @default("#502e9f")
   icon      String   @default("BookOpen")
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  updatedByEmail String?
 
   enrollments StudentCourse[]
   sessions    ScheduleSession[]
@@ -76,7 +81,9 @@ model StudentCourse {
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   status    String   @default("Tamamlandi")
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  updatedByEmail String?
 
   @@index([studentId])
   @@index([courseId])
@@ -94,6 +101,7 @@ model Installment {
   paidDate  String? // YYYY-MM-DD — ödemenin yapıldığı tarih
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  updatedByEmail String?
 
   @@index([studentId])
 }
@@ -115,6 +123,7 @@ model ScheduleSession {
   durationHrs Float    @default(1)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  updatedByEmail String?
 
   lessons Lesson[]
 
@@ -144,6 +153,7 @@ model Lead {
   note              String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  updatedByEmail    String?
 
   @@index([type])
   @@index([status])
@@ -157,6 +167,8 @@ model Teacher {
   rateType String  @default("PerLesson")
   rate     Float   @default(0)
   note     String?
+  updatedAt DateTime? @updatedAt
+  updatedByEmail String?
 
   lessons          Lesson[]
   scheduleSessions ScheduleSession[]
@@ -179,6 +191,8 @@ model Lesson {
   paidDate          String?
   note              String?
   createdAt         DateTime         @default(now())
+  updatedAt         DateTime?        @updatedAt
+  updatedByEmail    String?
 
   @@index([teacherId])
   @@index([paid])

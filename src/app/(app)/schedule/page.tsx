@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { Button, Card, inputClass, labelClass } from "@/components/ui";
+import { Button, Card, LastEditedBy, inputClass, labelClass } from "@/components/ui";
 import { CourseIcon } from "@/lib/course-icons";
 import { GroupMultiSelect } from "@/components/group-multi-select";
 import {
@@ -231,6 +231,8 @@ type SessionWithRel = {
   teacherId: string | null;
   teacher: Teacher | null;
   durationHrs: number;
+  updatedAt: Date;
+  updatedByEmail: string | null;
   lessons: { id: string; date: string; fee: number; paid: boolean }[];
 };
 type SessionsForDate = (date: Date) => SessionWithRel[];
@@ -499,6 +501,7 @@ function SessionEditForm({
         <Button variant="primary" className="w-full">
           Kaydet
         </Button>
+        <LastEditedBy email={session.updatedByEmail} date={session.updatedAt} />
       </form>
       <form action={deleteWithId}>
         <Button variant="danger" className="w-full">

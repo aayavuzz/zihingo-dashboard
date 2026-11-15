@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   EmptyState,
+  LastEditedBy,
   PageHeader,
   SummaryButton,
   Table,
@@ -96,6 +97,9 @@ export default async function TeacherDetailPage({
               Kaydet
             </Button>
           </form>
+          <div className="mt-2">
+            <LastEditedBy email={teacher.updatedByEmail} date={teacher.updatedAt} />
+          </div>
           <form action={deleteTeacherWithId} className="mt-3">
             <Button variant="danger" className="w-full">
               Öğretmeni Sil
@@ -190,6 +194,7 @@ export default async function TeacherDetailPage({
                   <Th>Kurs</Th>
                   <Th>Ücret</Th>
                   <Th>Durum</Th>
+                  <Th>Düzenleyen</Th>
                   <Th></Th>
                 </tr>
               </thead>
@@ -217,6 +222,7 @@ export default async function TeacherDetailPage({
                         </button>
                       </form>
                     </Td>
+                    <Td className="text-xs text-slate-400">{l.updatedByEmail ?? "—"}</Td>
                     <Td>
                       <form
                         action={async () => {

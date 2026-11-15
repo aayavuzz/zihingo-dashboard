@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { weekdayNameFromDate } from "@/lib/calendar";
+import { getActorEmail } from "@/lib/session";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -93,6 +94,7 @@ export async function updateSession(sessionId: string, formData: FormData) {
       teacherId: str(formData, "teacherId") ?? null,
       durationHrs: num(formData, "durationHrs") ?? 1,
       note: str(formData, "note") ?? null,
+      updatedByEmail: await getActorEmail(),
     },
   });
 
@@ -142,6 +144,7 @@ export async function logLessonForSession(sessionId: string, dateISO: string) {
       course: session.course?.name ?? session.title,
       durationHrs: session.durationHrs,
       fee,
+      updatedByEmail: await getActorEmail(),
     },
   });
 

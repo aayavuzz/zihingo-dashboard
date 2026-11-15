@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getActorEmail } from "@/lib/session";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -43,6 +44,7 @@ export async function updateTeacher(id: string, formData: FormData) {
       rateType: str(formData, "rateType") ?? "PerLesson",
       rate: num(formData, "rate") ?? 0,
       note: str(formData, "note"),
+      updatedByEmail: await getActorEmail(),
     },
   });
 
@@ -84,7 +86,10 @@ export async function updateLessonFee(lessonId: string, teacherId: string, formD
   const fee = num(formData, "fee");
   if (fee === undefined) return;
 
-  await prisma.lesson.update({ where: { id: lessonId }, data: { fee } });
+  await prisma.lesson.update({
+    where: { id: lessonId },
+    data: { fee, updatedByEmail: await getActorEmail() },
+  });
   revalidatePath(`/teachers/${teacherId}`);
   revalidatePath("/teachers");
 }
@@ -95,6 +100,7 @@ export async function toggleLessonPaid(lessonId: string, teacherId: string, paid
     data: {
       paid,
       paidDate: paid ? new Date().toISOString().slice(0, 10) : null,
+      updatedByEmail: await getActorEmail(),
     },
   });
   revalidatePath(`/teachers/${teacherId}`);

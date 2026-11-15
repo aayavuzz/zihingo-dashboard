@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getActorEmail } from "@/lib/session";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -27,7 +28,7 @@ export async function updateGroup(groupId: string, formData: FormData) {
 
   await prisma.group.update({
     where: { id: groupId },
-    data: { name, note: str(formData, "note") ?? null },
+    data: { name, note: str(formData, "note") ?? null, updatedByEmail: await getActorEmail() },
   });
 
   revalidatePath("/groups");

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { Plus } from "lucide-react";
 import { addInstallment, deleteInstallment, updateInstallment } from "@/app/(app)/students/actions";
+import { LastEditedBy } from "@/components/ui";
 
 type Installment = {
   id: string;
@@ -12,6 +13,8 @@ type Installment = {
   status: string;
   note: string | null;
   paidDate: string | null;
+  updatedByEmail: string | null;
+  updatedAt: Date;
 };
 
 const cellTone: Record<string, string> = {
@@ -187,6 +190,7 @@ export function EditableInstallmentCell({
               Sil
             </button>
           </div>
+          <LastEditedBy email={installment.updatedByEmail} date={installment.updatedAt} />
         </form>
       </Popover>
     </>

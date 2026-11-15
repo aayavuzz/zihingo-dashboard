@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getActorEmail } from "@/lib/session";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -59,6 +60,7 @@ export async function updateStudent(id: string, formData: FormData) {
       parentPhone: str(formData, "parentPhone") ?? null,
       isPreschool: str(formData, "isPreschool") === "on",
       note: str(formData, "note"),
+      updatedByEmail: await getActorEmail(),
     },
   });
 
@@ -98,7 +100,7 @@ export async function updateInstallmentStatus(
 ) {
   await prisma.installment.update({
     where: { id: installmentId },
-    data: { status },
+    data: { status, updatedByEmail: await getActorEmail() },
   });
   revalidatePath(`/students/${studentId}`);
   revalidatePath("/payments");
@@ -116,6 +118,7 @@ export async function updateInstallment(
       status: str(formData, "status") ?? "Bekliyor",
       note: str(formData, "note") ?? null,
       paidDate: str(formData, "paidDate") ?? null,
+      updatedByEmail: await getActorEmail(),
     },
   });
   revalidatePath(`/students/${studentId}`);
@@ -162,7 +165,7 @@ export async function updateStudentCourseStatus(
   }
   await prisma.studentCourse.update({
     where: { id: studentCourseId },
-    data: { status },
+    data: { status, updatedByEmail: await getActorEmail() },
   });
   revalidatePath("/students");
   revalidatePath(`/students/${studentId}`);

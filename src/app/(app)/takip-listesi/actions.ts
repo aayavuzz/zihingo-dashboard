@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getActorEmail } from "@/lib/session";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -54,6 +55,7 @@ export async function updateLead(id: string, formData: FormData) {
       appointmentDate: str(formData, "appointmentDate") ?? null,
       appointmentTime: str(formData, "appointmentTime") ?? null,
       note: str(formData, "note") ?? null,
+      updatedByEmail: await getActorEmail(),
     },
   });
 

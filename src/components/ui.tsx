@@ -238,3 +238,28 @@ export function SummaryButton({
 export function EmptyState({ text }: { text: string }) {
   return <div className="py-10 text-center text-sm text-slate-400">{text}</div>;
 }
+
+export function LastEditedBy({
+  email,
+  date,
+}: {
+  email?: string | null;
+  date?: Date | null;
+}) {
+  if (!email) return null;
+  const dateLabel = date
+    ? date.toLocaleString("tr-TR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+  return (
+    <div className="text-xs text-slate-400">
+      Son düzenleyen: <span className="text-slate-500">{email}</span>
+      {dateLabel && ` · ${dateLabel}`}
+    </div>
+  );
+}

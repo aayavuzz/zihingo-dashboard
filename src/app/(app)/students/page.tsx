@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   EmptyState,
+  LastEditedBy,
   PageHeader,
   SummaryButton,
   inputClass,
@@ -487,8 +488,9 @@ export default async function StudentsPage({
                           />
                         </div>
                       </div>
-                      <div className="flex gap-2 pt-1">
+                      <div className="flex items-center gap-3 pt-1">
                         <Button variant="primary">Kaydet</Button>
+                        <LastEditedBy email={s.updatedByEmail} date={s.updatedAt} />
                       </div>
                     </form>
                     <form action={deleteStudentWithId} className="mt-3">
