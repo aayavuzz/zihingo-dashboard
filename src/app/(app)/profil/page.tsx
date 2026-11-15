@@ -59,7 +59,10 @@ export default async function ProfilPage() {
 
   return (
     <div>
-      <PageHeader title="Profil" description="Kendi hesap bilgilerin" />
+      <PageHeader
+        title={isSuperAdmin ? "Kullanıcılar" : "Profil"}
+        description="Kendi hesap bilgilerin"
+      />
 
       <Card className="p-5 max-w-xl mb-8">
         <div className="flex items-center gap-4 mb-5">
@@ -177,6 +180,14 @@ export default async function ProfilPage() {
                       <div>
                         <label className={labelClass}>Telefon</label>
                         <input name="phone" defaultValue={u.phone ?? ""} className={inputClass} />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Yeni Şifre</label>
+                        <input
+                          name="password"
+                          placeholder="Değiştirmek için doldurun"
+                          className={inputClass}
+                        />
                       </div>
                       <div>
                         <label className={labelClass}>Fotoğraf</label>

@@ -77,11 +77,18 @@ export async function updateUserProfile(userId: string, formData: FormData) {
   const name = str(formData, "name") ?? null;
   const phone = str(formData, "phone") ?? null;
   const role = str(formData, "role") ?? "teacher";
+  const newPassword = str(formData, "password");
   const newPhotoUrl = await uploadPhotoIfPresent(formData, userId);
 
   const user = await prisma.user.update({
     where: { id: userId },
-    data: { name, phone, role, ...(newPhotoUrl ? { photoUrl: newPhotoUrl } : {}) },
+    data: {
+      name,
+      phone,
+      role,
+      ...(newPhotoUrl ? { photoUrl: newPhotoUrl } : {}),
+      ...(newPassword ? { passwordHash: await bcrypt.hash(newPassword, 10) } : {}),
+    },
   });
   await logAudit({
     entity: "User",
