@@ -99,7 +99,7 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
     <Card>
       <div>
         <div
-          className={`${rowCols} px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide`}
+          className={`hidden sm:grid ${rowCols} px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wide`}
         >
           <span>Durum</span>
           <span>Veli / Ad</span>
@@ -138,73 +138,137 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
           return (
             <details key={l.id} className="group border-b border-slate-100 last:border-b-0">
               <summary
-                className={`${rowCols} list-none cursor-pointer px-4 py-2.5 text-sm transition-colors ${
+                className={`list-none cursor-pointer text-sm transition-colors ${
                   takipOverdue || callOverdue ? "bg-rose-50 hover:bg-rose-100" : "hover:bg-slate-50"
                 }`}
               >
-                <span className="flex items-center gap-1.5">
-                  <Badge value={l.status} />
-                  {(takipOverdue || callOverdue) && (
-                    <span className="relative inline-flex group/tip">
-                      <AlertTriangle size={14} className="text-rose-600 shrink-0" />
-                      <span className="pointer-events-none absolute left-1/2 top-full -translate-x-1/2 mt-1.5 w-56 whitespace-normal rounded-md bg-slate-900 text-white text-[11px] leading-snug px-2.5 py-1.5 opacity-0 scale-95 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-100 z-30">
-                        {takipOverdue
-                          ? "Bu talep “Takip Araması” durumunda ve 72 saatten uzun süredir aranmadı — bir an önce arayıp durumu güncelleyin."
-                          : "Planlanan arama saati geçti — bir an önce arayıp durumu güncelleyin."}
-                      </span>
-                    </span>
-                  )}
-                </span>
-                <span className="flex items-center gap-1.5 min-w-0">
-                  {l.type === "OkulOncesi" && (
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
-                      <Baby size={12} />
-                    </span>
-                  )}
-                  <span
-                    className={`font-medium truncate ${
-                      l.type === "OkulOncesi"
-                        ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
-                        : "text-slate-800"
-                    }`}
-                  >
-                    {l.contactName ?? "—"}
-                  </span>
-                </span>
-                <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
-                <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
-                {showCallFields ? (
-                  <>
-                    <span className="text-slate-500 whitespace-nowrap">
-                      {toTRDisplay(l.callDate) || "—"}
-                    </span>
-                    <span className="text-slate-500 whitespace-nowrap">
-                      {l.callTime || "—"}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-slate-500 whitespace-nowrap">
-                      {toTRDisplay(l.firstContactDate) || "—"}
-                    </span>
-                    <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
-                      {toTRDisplay(contactDate) || "—"}
-                      {stale !== null && stale > 14 && (
-                        <span
-                          className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
-                          title={`${stale} gündür güncellenmedi`}
-                        />
+                {/* Mobil kart görünümü */}
+                <div className="sm:hidden px-4 py-3 flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      <Badge value={l.status} />
+                      {(takipOverdue || callOverdue) && (
+                        <span className="relative inline-flex group/tip">
+                          <AlertTriangle size={14} className="text-rose-600 shrink-0" />
+                          <span className="pointer-events-none absolute left-0 top-full mt-1.5 w-56 whitespace-normal rounded-md bg-slate-900 text-white text-[11px] leading-snug px-2.5 py-1.5 opacity-0 scale-95 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-100 z-30">
+                            {takipOverdue
+                              ? "Bu talep “Takip Araması” durumunda ve 72 saatten uzun süredir aranmadı — bir an önce arayıp durumu güncelleyin."
+                              : "Planlanan arama saati geçti — bir an önce arayıp durumu güncelleyin."}
+                          </span>
+                        </span>
                       )}
                     </span>
-                  </>
-                )}
-                <span className="text-slate-500 truncate" title={l.note ?? ""}>
-                  {l.note ?? "—"}
-                </span>
-                <ChevronDown
-                  size={16}
-                  className="text-slate-400 transition-transform group-open:rotate-180 justify-self-end"
-                />
+                    <ChevronDown
+                      size={16}
+                      className="text-slate-400 transition-transform group-open:rotate-180 shrink-0"
+                    />
+                  </div>
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    {l.type === "OkulOncesi" && (
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
+                        <Baby size={12} />
+                      </span>
+                    )}
+                    <span
+                      className={`font-medium truncate ${
+                        l.type === "OkulOncesi"
+                          ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
+                          : "text-slate-800"
+                      }`}
+                    >
+                      {l.contactName ?? "—"}
+                    </span>
+                  </span>
+                  <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    {l.phone && <span>{l.phone}</span>}
+                    {l.studentName && <span className="text-slate-600">{l.studentName}</span>}
+                    {showCallFields ? (
+                      <span>
+                        {toTRDisplay(l.callDate) || "—"}
+                        {l.callTime ? ` · ${l.callTime}` : ""}
+                      </span>
+                    ) : (
+                      contactDate && (
+                        <span className="flex items-center gap-1.5">
+                          {toTRDisplay(contactDate)}
+                          {stale !== null && stale > 14 && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                          )}
+                        </span>
+                      )
+                    )}
+                  </div>
+                  {l.note && (
+                    <div className="text-xs text-slate-400 truncate">{l.note}</div>
+                  )}
+                </div>
+
+                {/* Masaüstü tablo görünümü */}
+                <div className={`hidden sm:grid ${rowCols} items-center gap-3 px-4 py-2.5`}>
+                  <span className="flex items-center gap-1.5">
+                    <Badge value={l.status} />
+                    {(takipOverdue || callOverdue) && (
+                      <span className="relative inline-flex group/tip">
+                        <AlertTriangle size={14} className="text-rose-600 shrink-0" />
+                        <span className="pointer-events-none absolute left-1/2 top-full -translate-x-1/2 mt-1.5 w-56 whitespace-normal rounded-md bg-slate-900 text-white text-[11px] leading-snug px-2.5 py-1.5 opacity-0 scale-95 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-100 z-30">
+                          {takipOverdue
+                            ? "Bu talep “Takip Araması” durumunda ve 72 saatten uzun süredir aranmadı — bir an önce arayıp durumu güncelleyin."
+                            : "Planlanan arama saati geçti — bir an önce arayıp durumu güncelleyin."}
+                        </span>
+                      </span>
+                    )}
+                  </span>
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    {l.type === "OkulOncesi" && (
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-amber-400 text-white shrink-0">
+                        <Baby size={12} />
+                      </span>
+                    )}
+                    <span
+                      className={`font-medium truncate ${
+                        l.type === "OkulOncesi"
+                          ? "bg-gradient-to-r from-pink-600 via-purple-600 to-amber-600 bg-clip-text text-transparent"
+                          : "text-slate-800"
+                      }`}
+                    >
+                      {l.contactName ?? "—"}
+                    </span>
+                  </span>
+                  <span className="text-slate-500 truncate">{l.phone ?? "—"}</span>
+                  <span className="text-slate-600 truncate">{l.studentName ?? "—"}</span>
+                  {showCallFields ? (
+                    <>
+                      <span className="text-slate-500 whitespace-nowrap">
+                        {toTRDisplay(l.callDate) || "—"}
+                      </span>
+                      <span className="text-slate-500 whitespace-nowrap">
+                        {l.callTime || "—"}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-slate-500 whitespace-nowrap">
+                        {toTRDisplay(l.firstContactDate) || "—"}
+                      </span>
+                      <span className="text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
+                        {toTRDisplay(contactDate) || "—"}
+                        {stale !== null && stale > 14 && (
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+                            title={`${stale} gündür güncellenmedi`}
+                          />
+                        )}
+                      </span>
+                    </>
+                  )}
+                  <span className="text-slate-500 truncate" title={l.note ?? ""}>
+                    {l.note ?? "—"}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className="text-slate-400 transition-transform group-open:rotate-180 justify-self-end"
+                  />
+                </div>
               </summary>
 
               <div className="px-4 pb-5 pt-3 bg-slate-50/60 border-t border-slate-100">
@@ -375,7 +439,7 @@ export default async function TakipListesiPage({
             <summary className="list-none">
               <SummaryButton variant="primary">+ Talep Ekle</SummaryButton>
             </summary>
-            <Card className="absolute right-0 mt-2 w-96 p-4 z-10">
+            <Card className="absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] p-4 z-10">
               <form action={createLead} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -440,8 +504,8 @@ export default async function TakipListesiPage({
         }
       />
 
-      <div className="flex items-center gap-4 mb-4">
-        <div className="flex gap-1.5">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 mb-4">
+        <div className="flex flex-wrap gap-1.5">
           {tabs.map((t) => (
             <a
               key={t.key}
@@ -466,15 +530,19 @@ export default async function TakipListesiPage({
             Aranacaklar <span className="opacity-70">({aranacakCount})</span>
           </a>
         </div>
-        <form className="flex-1 flex items-center gap-2">
+        <form className="flex-1 flex flex-wrap items-center gap-2">
           <input type="hidden" name="tab" value={activeTab} />
           <input
             name="q"
             defaultValue={q}
             placeholder="İsim, öğrenci veya telefonla ara..."
-            className={inputClass + " max-w-xs"}
+            className={inputClass + " w-full sm:w-auto sm:max-w-xs"}
           />
-          <select name="status" defaultValue={activeStatus ?? "all"} className={inputClass + " max-w-[170px]"}>
+          <select
+            name="status"
+            defaultValue={activeStatus ?? "all"}
+            className={inputClass + " flex-1 sm:flex-none sm:max-w-[170px]"}
+          >
             <option value="all">Tüm durumlar</option>
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
