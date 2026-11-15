@@ -12,6 +12,7 @@ import {
   studentStatusOrder,
 } from "@/components/ui";
 import { AddInstallmentButton, EditableInstallmentCell } from "./editable-cell";
+import { installmentBreakdown } from "@/lib/payments";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +31,16 @@ export default async function PaymentsPage() {
   );
 
   const all = students.flatMap((s) => s.installments);
-  const totals = {
-    Odendi: all.filter((i) => i.status === "Odendi").reduce((a, i) => a + i.amount, 0),
-    Bekliyor: all.filter((i) => i.status === "Bekliyor").reduce((a, i) => a + i.amount, 0),
-    Odenmedi: all.filter((i) => i.status === "Odenmedi").reduce((a, i) => a + i.amount, 0),
-  };
+  const totals = all.reduce(
+    (acc, i) => {
+      const b = installmentBreakdown(i);
+      acc.Odendi += b.paid;
+      acc.Bekliyor += b.pending;
+      acc.Odenmedi += b.unpaid;
+      return acc;
+    },
+    { Odendi: 0, Bekliyor: 0, Odenmedi: 0 }
+  );
 
   const maxKur = students.reduce(
     (max, s) => Math.max(max, ...s.installments.map((i) => i.index), 0),
@@ -87,6 +93,9 @@ export default async function PaymentsPage() {
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-sm bg-rose-400" /> Ödenmedi
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-sm bg-sky-400" /> Kısmi Ödendi
         </span>
         <span className="hidden sm:inline text-slate-300">·</span>
         <span className="hidden sm:inline">Bir tutara tıkla → düzenle / sil</span>

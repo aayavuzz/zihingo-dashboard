@@ -11,6 +11,7 @@ type Installment = {
   index: number;
   amount: number;
   status: string;
+  paidAmount?: number | null;
   note: string | null;
   paidDate: string | null;
   updatedByEmail: string | null;
@@ -21,6 +22,7 @@ const cellTone: Record<string, string> = {
   Odendi: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15",
   Bekliyor: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/15",
   Odenmedi: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/15",
+  KismiOdendi: "bg-sky-50 text-sky-700 ring-1 ring-sky-600/15",
 };
 
 function formatTL(n: number) {
@@ -100,6 +102,7 @@ export function EditableInstallmentCell({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [status, setStatus] = useState(installment.status);
   const btnRef = useRef<HTMLButtonElement>(null);
   const pos = usePopoverPosition(open, btnRef);
 
@@ -111,7 +114,16 @@ export function EditableInstallmentCell({
         onClick={() => setOpen((v) => !v)}
         className={`group relative block w-full rounded-md px-2 py-1.5 text-xs font-semibold transition hover:ring-2 hover:ring-brand-300 ${cellTone[installment.status]}`}
       >
-        <div>{formatTL(installment.amount)}</div>
+        <div>
+          {installment.status === "KismiOdendi" ? (
+            <>
+              {(installment.paidAmount ?? 0).toLocaleString("tr-TR")}
+              <span className="opacity-60">/{installment.amount.toLocaleString("tr-TR")}₺</span>
+            </>
+          ) : (
+            formatTL(installment.amount)
+          )}
+        </div>
         {installment.note && (
           <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded-md bg-slate-900 text-white text-[11px] font-medium px-2 py-1 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-100 z-30">
             {installment.note}
@@ -144,12 +156,30 @@ export function EditableInstallmentCell({
           </div>
           <div>
             <label className={fieldLabel}>Durum</label>
-            <select name="status" defaultValue={installment.status} className={fieldClass}>
+            <select
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className={fieldClass}
+            >
               <option value="Odendi">Ödendi</option>
               <option value="Bekliyor">Bekliyor</option>
               <option value="Odenmedi">Ödenmedi</option>
+              <option value="KismiOdendi">Kısmi Ödendi</option>
             </select>
           </div>
+          {status === "KismiOdendi" && (
+            <div>
+              <label className={fieldLabel}>Ödenen Tutar (₺)</label>
+              <input
+                name="paidAmount"
+                type="number"
+                step="0.01"
+                defaultValue={installment.paidAmount ?? ""}
+                className={fieldClass}
+              />
+            </div>
+          )}
           <div>
             <label className={fieldLabel}>Ödeme Tarihi</label>
             <input
@@ -206,6 +236,7 @@ export function AddInstallmentButton({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [status, setStatus] = useState("Bekliyor");
   const btnRef = useRef<HTMLButtonElement>(null);
   const pos = usePopoverPosition(open, btnRef);
 
@@ -240,12 +271,24 @@ export function AddInstallmentButton({
           </div>
           <div>
             <label className={fieldLabel}>Durum</label>
-            <select name="status" defaultValue="Bekliyor" className={fieldClass}>
+            <select
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className={fieldClass}
+            >
               <option value="Odendi">Ödendi</option>
               <option value="Bekliyor">Bekliyor</option>
               <option value="Odenmedi">Ödenmedi</option>
+              <option value="KismiOdendi">Kısmi Ödendi</option>
             </select>
           </div>
+          {status === "KismiOdendi" && (
+            <div>
+              <label className={fieldLabel}>Ödenen Tutar (₺)</label>
+              <input name="paidAmount" type="number" step="0.01" className={fieldClass} />
+            </div>
+          )}
           <div>
             <label className={fieldLabel}>Ödeme Tarihi</label>
             <input name="paidDate" type="date" className={fieldClass} />

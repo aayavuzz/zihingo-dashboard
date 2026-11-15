@@ -2,26 +2,18 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { ChartCard, CourseProgressBars, StackedBarSummary } from "@/components/charts";
+import { installmentBreakdown } from "@/lib/payments";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [activeStudents, pendingStudents, pasifStudents, paidAgg, pendingAgg, unpaidAgg, courses, teachers] =
+  const [activeStudents, pendingStudents, pasifStudents, installments, courses, teachers] =
     await Promise.all([
       prisma.student.count({ where: { status: "Aktif" } }),
       prisma.student.count({ where: { status: "Bekleyen" } }),
       prisma.student.count({ where: { status: "Pasif" } }),
-      prisma.installment.aggregate({
-        where: { status: "Odendi" },
-        _sum: { amount: true },
-      }),
-      prisma.installment.aggregate({
-        where: { status: "Bekliyor" },
-        _sum: { amount: true },
-      }),
-      prisma.installment.aggregate({
-        where: { status: "Odenmedi" },
-        _sum: { amount: true },
+      prisma.installment.findMany({
+        select: { status: true, amount: true, paidAmount: true },
       }),
       prisma.course.findMany({
         include: { enrollments: { select: { status: true } } },
@@ -31,6 +23,17 @@ export default async function DashboardPage() {
         include: { _count: { select: { lessons: true } } },
       }),
     ]);
+
+  const paymentTotals = installments.reduce(
+    (acc, i) => {
+      const b = installmentBreakdown(i);
+      acc.paid += b.paid;
+      acc.pending += b.pending;
+      acc.unpaid += b.unpaid;
+      return acc;
+    },
+    { paid: 0, pending: 0, unpaid: 0 }
+  );
 
   const teacherRows = teachers.map((t) => ({ ...t, lessonCount: t._count.lessons }));
   const maxLessonCount = Math.max(...teacherRows.map((t) => t.lessonCount), 1);
@@ -52,9 +55,9 @@ export default async function DashboardPage() {
           <StackedBarSummary
             formatValue={(v) => v.toLocaleString("tr-TR") + "₺"}
             segments={[
-              { label: "Ödendi", value: paidAgg._sum.amount ?? 0, colorClass: "bg-emerald-500" },
-              { label: "Bekliyor", value: pendingAgg._sum.amount ?? 0, colorClass: "bg-amber-400" },
-              { label: "Ödenmedi", value: unpaidAgg._sum.amount ?? 0, colorClass: "bg-rose-500" },
+              { label: "Ödendi", value: paymentTotals.paid, colorClass: "bg-emerald-500" },
+              { label: "Bekliyor", value: paymentTotals.pending, colorClass: "bg-amber-400" },
+              { label: "Ödenmedi", value: paymentTotals.unpaid, colorClass: "bg-rose-500" },
             ]}
           />
         </ChartCard>

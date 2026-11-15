@@ -113,7 +113,8 @@ model Installment {
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   index     Int // 1. Kur, 2. Kur, ...
   amount    Float
-  status    String   @default("Bekliyor")
+  status    String   @default("Bekliyor") // Odendi | Bekliyor | Odenmedi | KismiOdendi
+  paidAmount Float? // sadece status "KismiOdendi" iken kullanılır
   note      String?
   paidDate  String? // YYYY-MM-DD — ödemenin yapıldığı tarih
   createdAt DateTime @default(now())

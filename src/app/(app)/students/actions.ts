@@ -90,6 +90,7 @@ export async function addInstallment(studentId: string, formData: FormData) {
       index: lastIndex + 1,
       amount,
       status: str(formData, "status") ?? "Bekliyor",
+      paidAmount: num(formData, "paidAmount"),
       note: str(formData, "note"),
       paidDate: str(formData, "paidDate"),
       updatedByEmail: await getActorEmail(),
@@ -129,11 +130,13 @@ export async function updateInstallment(
   studentId: string,
   formData: FormData
 ) {
+  const status = str(formData, "status") ?? "Bekliyor";
   const inst = await prisma.installment.update({
     where: { id: installmentId },
     data: {
       amount: num(formData, "amount") ?? 0,
-      status: str(formData, "status") ?? "Bekliyor",
+      status,
+      paidAmount: status === "KismiOdendi" ? (num(formData, "paidAmount") ?? 0) : null,
       note: str(formData, "note") ?? null,
       paidDate: str(formData, "paidDate") ?? null,
       updatedByEmail: await getActorEmail(),

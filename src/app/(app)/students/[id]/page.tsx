@@ -17,6 +17,7 @@ import {
   labelClass,
 } from "@/components/ui";
 import { CourseIcon } from "@/lib/course-icons";
+import { installmentBreakdown } from "@/lib/payments";
 import {
   addInstallment,
   deleteInstallment,
@@ -51,12 +52,9 @@ export default async function StudentDetailPage({
   const deleteStudentWithId = deleteStudent.bind(null, id);
   const addInstallmentWithId = addInstallment.bind(null, id);
 
-  const paid = student.installments
-    .filter((i) => i.status === "Odendi")
-    .reduce((a, i) => a + i.amount, 0);
-  const rest = student.installments
-    .filter((i) => i.status !== "Odendi")
-    .reduce((a, i) => a + i.amount, 0);
+  const breakdowns = student.installments.map(installmentBreakdown);
+  const paid = breakdowns.reduce((a, b) => a + b.paid, 0);
+  const rest = breakdowns.reduce((a, b) => a + b.pending + b.unpaid, 0);
 
   return (
     <div>
@@ -269,7 +267,19 @@ export default async function StudentDetailPage({
                 {student.installments.map((inst) => (
                   <tr key={inst.id} className="hover:bg-slate-50">
                     <Td>{inst.index}. Kur</Td>
-                    <Td className="font-medium">{inst.amount.toLocaleString("tr-TR")}₺</Td>
+                    <Td className="font-medium">
+                      {inst.status === "KismiOdendi" ? (
+                        <>
+                          {(inst.paidAmount ?? 0).toLocaleString("tr-TR")}₺
+                          <span className="text-slate-400 font-normal">
+                            {" "}
+                            / {inst.amount.toLocaleString("tr-TR")}₺
+                          </span>
+                        </>
+                      ) : (
+                        `${inst.amount.toLocaleString("tr-TR")}₺`
+                      )}
+                    </Td>
                     <Td>
                       <form
                         action={async (fd: FormData) => {
@@ -290,6 +300,7 @@ export default async function StudentDetailPage({
                           <option value="Odendi">Ödendi</option>
                           <option value="Bekliyor">Bekliyor</option>
                           <option value="Odenmedi">Ödenmedi</option>
+                          <option value="KismiOdendi">Kısmi Ödendi</option>
                         </select>
                         <button className="text-xs text-brand-600 hover:underline">
                           Kaydet

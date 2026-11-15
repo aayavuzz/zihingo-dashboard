@@ -14,6 +14,7 @@ import {
   studentStatusOrder,
 } from "@/components/ui";
 import { CourseChip, CourseIcon } from "@/lib/course-icons";
+import { installmentBreakdown } from "@/lib/payments";
 import {
   addStudentCourse,
   createStudent,
@@ -220,12 +221,9 @@ export default async function StudentsPage({
             </div>
 
             {students.map((s) => {
-              const paid = s.installments
-                .filter((i) => i.status === "Odendi")
-                .reduce((a, i) => a + i.amount, 0);
-              const pending = s.installments
-                .filter((i) => i.status !== "Odendi")
-                .reduce((a, i) => a + i.amount, 0);
+              const breakdowns = s.installments.map(installmentBreakdown);
+              const paid = breakdowns.reduce((a, b) => a + b.paid, 0);
+              const pending = breakdowns.reduce((a, b) => a + b.pending + b.unpaid, 0);
               const updateStudentWithId = updateStudent.bind(null, s.id);
               const deleteStudentWithId = deleteStudent.bind(null, s.id);
               const addStudentCourseWithId = addStudentCourse.bind(null, s.id);
