@@ -351,6 +351,7 @@ export default async function TakipListesiPage({
     { key: "kapanan", label: "Kapanan", count: leads.filter((l) => CLOSED_STATUSES.includes(l.status)).length },
     { key: "tumu", label: "Tümü", count: leads.length },
   ];
+  const aranacakCount = leads.filter((l) => l.status === "Aranacak").length;
 
   return (
     <div>
@@ -442,6 +443,16 @@ export default async function TakipListesiPage({
               {t.label} <span className="opacity-70">({t.count})</span>
             </a>
           ))}
+          <a
+            href={`/takip-listesi?tab=tumu&status=Aranacak${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+            className={`text-xs font-medium px-3 py-1.5 rounded-full border ${
+              activeStatus === "Aranacak"
+                ? "bg-cyan-600 text-white border-cyan-600"
+                : "bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100"
+            }`}
+          >
+            Aranacaklar <span className="opacity-70">({aranacakCount})</span>
+          </a>
         </div>
         <form className="flex-1 flex items-center gap-2">
           <input type="hidden" name="tab" value={activeTab} />
