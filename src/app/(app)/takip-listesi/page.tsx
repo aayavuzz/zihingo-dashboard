@@ -115,8 +115,11 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                 <span className="flex items-center gap-1.5">
                   <Badge value={l.status} />
                   {takipOverdue && (
-                    <span title="72 saattir takip araması yapılmadı!">
+                    <span className="relative inline-flex group/tip">
                       <AlertTriangle size={14} className="text-rose-600 shrink-0" />
+                      <span className="pointer-events-none absolute left-1/2 top-full -translate-x-1/2 mt-1.5 w-56 whitespace-normal rounded-md bg-slate-900 text-white text-[11px] leading-snug px-2.5 py-1.5 opacity-0 scale-95 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-100 z-30">
+                        Bu talep &quot;Takip Araması&quot; durumunda ve 72 saatten uzun süredir aranmadı — bir an önce arayıp durumu güncelleyin.
+                      </span>
                     </span>
                   )}
                 </span>
