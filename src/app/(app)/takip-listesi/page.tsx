@@ -48,6 +48,10 @@ function hoursSince(date: Date) {
   return (Date.now() - date.getTime()) / (1000 * 60 * 60);
 }
 
+function isTakipOverdue(l: Lead) {
+  return l.status === "TakipAramasi" && hoursSince(l.updatedAt) > 72;
+}
+
 // Serbest metin tarihleri ("gg.aa.yyyy" eski kayıtlar, "yyyy-aa-gg" <input type="date">
 // çıktısı) tek formatta gösterip input'a geri besleyebilmek için ortak yardımcılar.
 function toISOInput(dateStr?: string | null): string {
@@ -75,6 +79,11 @@ function LeadTable({ leads }: { leads: Lead[] }) {
     );
   }
 
+  // Takip araması geciken kayıtlar (72 saat uyarısı) en üstte görünsün.
+  const sortedLeads = [...leads].sort(
+    (a, b) => Number(isTakipOverdue(b)) - Number(isTakipOverdue(a))
+  );
+
   return (
     <Card>
       <div>
@@ -91,11 +100,11 @@ function LeadTable({ leads }: { leads: Lead[] }) {
           <span />
         </div>
 
-        {leads.map((l) => {
+        {sortedLeads.map((l) => {
           const updateLeadWithId = updateLead.bind(null, l.id);
           const deleteLeadWithId = deleteLead.bind(null, l.id);
           const contactDate = l.lastContactDate ?? l.firstContactDate;
-          const takipOverdue = l.status === "TakipAramasi" && hoursSince(l.updatedAt) > 72;
+          const takipOverdue = isTakipOverdue(l);
           const stale =
             OPEN_STATUSES.includes(l.status) && l.status !== "TakipAramasi" && contactDate
               ? daysSince(
