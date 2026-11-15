@@ -103,7 +103,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   );
 
   return (
-    <div className="min-h-full flex bg-slate-100 text-slate-900">
+    <div className="min-h-full flex flex-col md:flex-row bg-slate-100 text-slate-900">
       <aside className="hidden md:flex md:flex-col w-64 shrink-0 border-r border-slate-200/80 bg-white min-h-screen">
         {sidebarInner}
       </aside>
