@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/session";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { ChartCard, CourseProgressBars, StackedBarSummary } from "@/components/charts";
 import { installmentBreakdown } from "@/lib/payments";
@@ -7,14 +8,19 @@ import { installmentBreakdown } from "@/lib/payments";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const session = await getSession();
+  const isTeacher = session?.role === "teacher";
+
   const [activeStudents, pendingStudents, pasifStudents, installments, courses, teachers] =
     await Promise.all([
       prisma.student.count({ where: { status: "Aktif" } }),
       prisma.student.count({ where: { status: "Bekleyen" } }),
       prisma.student.count({ where: { status: "Pasif" } }),
-      prisma.installment.findMany({
-        select: { status: true, amount: true, paidAmount: true },
-      }),
+      isTeacher
+        ? Promise.resolve([])
+        : prisma.installment.findMany({
+            select: { status: true, amount: true, paidAmount: true },
+          }),
       prisma.course.findMany({
         include: { enrollments: { select: { status: true } } },
       }),
@@ -50,17 +56,19 @@ export default async function DashboardPage() {
     <div>
       <PageHeader title="Panel" description="ZihinGO süreçlerinin genel görünümü" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        <ChartCard title="Ödeme Durumu" description="Tüm taksitlerin tahsilat durumu">
-          <StackedBarSummary
-            formatValue={(v) => v.toLocaleString("tr-TR") + "₺"}
-            segments={[
-              { label: "Ödendi", value: paymentTotals.paid, colorClass: "bg-emerald-500" },
-              { label: "Bekliyor", value: paymentTotals.pending, colorClass: "bg-amber-400" },
-              { label: "Ödenmedi", value: paymentTotals.unpaid, colorClass: "bg-rose-500" },
-            ]}
-          />
-        </ChartCard>
+      <div className={`grid grid-cols-1 ${isTeacher ? "" : "lg:grid-cols-2"} gap-4 mb-4`}>
+        {!isTeacher && (
+          <ChartCard title="Ödeme Durumu" description="Tüm taksitlerin tahsilat durumu">
+            <StackedBarSummary
+              formatValue={(v) => v.toLocaleString("tr-TR") + "₺"}
+              segments={[
+                { label: "Ödendi", value: paymentTotals.paid, colorClass: "bg-emerald-500" },
+                { label: "Bekliyor", value: paymentTotals.pending, colorClass: "bg-amber-400" },
+                { label: "Ödenmedi", value: paymentTotals.unpaid, colorClass: "bg-rose-500" },
+              ]}
+            />
+          </ChartCard>
+        )}
 
         <ChartCard title="Öğrenci Durumu" description="Kayıtlı öğrencilerin güncel durumu">
           <StackedBarSummary
