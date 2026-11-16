@@ -22,6 +22,13 @@ model User {
   pushSubscriptions PushSubscription[]
 }
 
+model DailyReminderLog {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  lastDate  String // en son hangi gün (YYYY-MM-DD, Türkiye tarihi) için gönderildi/kontrol edildi
+  updatedAt DateTime @updatedAt
+}
+
 model PushSubscription {
   id        String   @id @default(cuid())
   userId    String
@@ -185,6 +192,7 @@ model Lead {
   callDate          String? // "Aranacak" durumunda planlanan arama tarihi
   callTime          String? // "Aranacak" durumunda planlanan arama saati
   callReminderSentAt DateTime? // arama saati yaklaşınca bildirim gönderildi mi
+  callOverdueSentAt  DateTime? // arama saati geçince bildirim gönderildi mi
   note              String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
