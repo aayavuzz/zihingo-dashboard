@@ -1,16 +1,59 @@
 name: Arama hatırlatma kontrolü
 
+# GitHub'ın "schedule" tetikleyicisi düşük öncelikli: "*/5" yazsak bile
+# pratikte saatlerce gecikebiliyor (ölçtük: 3-4 saatte bir çalıştı).
+# Bu yüzden asıl işi bir döngü yapıyor: her çalıştırma ~57 dakika boyunca
+# 5 dakikada bir kontrol ediyor, sonra kendini yeniden tetikliyor.
+# Aşağıdaki "schedule" sadece zincir kopduğunda yeniden başlatan bir
+# güvenlik ağı olarak duruyor.
+
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch: {}
+
+permissions:
+  actions: write
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 70
     steps:
-      - name: Hatırlatma endpoint'ini tetikle
+      - name: Zaten çalışan bir döngü var mı?
+        id: guard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          curl -sf -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://panel.zihingo.com/api/cron/call-reminders
+          # Son 50 dakika içinde başlamış, hâlâ süren başka bir çalıştırma
+          # varsa bu çalıştırmayı atla. (50 dakikadan eski olanlar zaten
+          # bitmek üzere olan, zinciri devredecek çalıştırmalardır.)
+          cutoff=$(date -u -d '50 minutes ago' +%Y-%m-%dT%H:%M:%SZ)
+          running=$(gh api \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/call-reminders.yml/runs?status=in_progress&per_page=100" \
+            --jq "[.workflow_runs[] | select(.id != ${{ github.run_id }}) | select(.created_at > \"$cutoff\")] | length")
+          echo "running=$running" >> "$GITHUB_OUTPUT"
+          if [ "$running" -gt 0 ]; then
+            echo "Başka bir döngü çalışıyor — bu çalıştırma atlanıyor."
+          else
+            echo "Aktif döngü yok — kontrole başlanıyor."
+          fi
+
+      - name: 5 dakikada bir kontrol et (~57 dakika)
+        if: steps.guard.outputs.running == '0'
+        run: |
+          for i in $(seq 1 12); do
+            echo "--- kontrol $i/12 ($(date -u '+%H:%M:%S') UTC) ---"
+            curl -sf -m 30 -X GET \
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              https://panel.zihingo.com/api/cron/call-reminders \
+              || echo "istek başarısız — sonraki turda tekrar denenecek"
+            echo ""
+            if [ "$i" -lt 12 ]; then sleep 285; fi
+          done
+
+      - name: Zinciri sürdür
+        if: steps.guard.outputs.running == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run call-reminders.yml -R "$GITHUB_REPOSITORY"
