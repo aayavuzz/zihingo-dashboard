@@ -300,7 +300,15 @@ export default async function RandevularPage({
   );
 }
 
-function ApptChip({ item, compact = false }: { item: ApptItem; compact?: boolean }) {
+function ApptChip({
+  item,
+  compact = false,
+  hideTime = false,
+}: {
+  item: ApptItem;
+  compact?: boolean;
+  hideTime?: boolean;
+}) {
   const tone =
     item.source === "lead"
       ? "bg-violet-50 text-violet-700 ring-violet-600/20 hover:bg-violet-100"
@@ -312,7 +320,9 @@ function ApptChip({ item, compact = false }: { item: ApptItem; compact?: boolean
         <span
           className={`block truncate rounded-md ring-1 px-1.5 py-0.5 text-[11px] font-medium transition-colors ${tone}`}
         >
-          {item.time && <span className="tabular-nums opacity-80">{item.time} </span>}
+          {item.time && !hideTime && (
+            <span className="tabular-nums opacity-80">{item.time} </span>
+          )}
           {item.title}
         </span>
       </summary>
@@ -566,7 +576,7 @@ function DayView({
                 {it.time ?? "—"}
               </span>
               <div className="flex-1 min-w-0">
-                <ApptChip item={it} />
+                <ApptChip item={it} hideTime />
               </div>
             </div>
           ))}
