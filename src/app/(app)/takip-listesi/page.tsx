@@ -432,7 +432,7 @@ function LeadTable({
                     action={addLeadNote.bind(null, l.id)}
                     className="rounded-lg bg-white ring-1 ring-slate-200 p-3 max-w-3xl"
                   >
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                       <div className="sm:w-40 shrink-0">
                         <label className={labelClass}>Tarih</label>
                         <input
@@ -452,9 +452,16 @@ function LeadTable({
                           className={`${inputClass} resize-y`}
                         />
                       </div>
-                    </div>
-                    <div className="flex justify-end mt-2.5">
-                      <Button variant="secondary">Not Ekle</Button>
+                      <div className="shrink-0">
+                        {/* Butonun üstü diğer alanların input hizasına gelsin diye
+                            etiket yüksekliğinde görünmez bir boşluk */}
+                        <span aria-hidden className={`${labelClass} hidden sm:block invisible`}>
+                          &nbsp;
+                        </span>
+                        <Button variant="secondary" className="w-full sm:w-auto">
+                          Not Ekle
+                        </Button>
+                      </div>
                     </div>
                   </form>
                 </div>
