@@ -365,7 +365,12 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
                     </div>
                     <div className="col-span-2 sm:col-span-4">
                       <label className={labelClass}>Not</label>
-                      <input name="note" defaultValue={l.note ?? ""} className={inputClass} />
+                      <textarea
+                        name="note"
+                        rows={4}
+                        defaultValue={l.note ?? ""}
+                        className={`${inputClass} resize-y min-h-24`}
+                      />
                     </div>
                   </div>
                   <div className="flex items-center gap-3 pt-1">
@@ -494,7 +499,7 @@ export default async function TakipListesiPage({
                 </div>
                 <div>
                   <label className={labelClass}>Not</label>
-                  <input name="note" className={inputClass} />
+                  <textarea name="note" rows={4} className={`${inputClass} resize-y min-h-24`} />
                 </div>
                 <Button variant="primary" className="w-full">
                   Ekle
