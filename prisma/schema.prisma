@@ -203,6 +203,22 @@ model Lead {
   @@index([status])
 }
 
+// Randevu takvimi: talebe bağlı olmayan serbest randevular.
+// Takip Listesi'ndeki randevular (Lead.appointmentDate/Time) takvimde
+// ayrıca gösterilir, buraya kopyalanmaz.
+model Appointment {
+  id             String   @id @default(cuid())
+  date           String // YYYY-MM-DD
+  time           String? // "14:00"
+  title          String
+  note           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  updatedByEmail String?
+
+  @@index([date])
+}
+
 model LeadNote {
   id             String   @id @default(cuid())
   leadId         String

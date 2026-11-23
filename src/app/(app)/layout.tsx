@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  CalendarClock,
   CalendarDays,
   CreditCard,
   GraduationCap,
@@ -60,6 +61,7 @@ const navItems: NavItem[] = [
     icon: <CalendarDays {...iconProps} />,
     tabIcon: <CalendarDays {...tabIconProps} />,
   },
+  { href: "/randevular", label: "Randevular", icon: <CalendarClock {...iconProps} /> },
   { href: "/profil", label: "Profil", icon: <User {...iconProps} /> },
   { href: "/teachers", label: "Öğretmenler", icon: <Users {...iconProps} />, adminOnly: true },
   { href: "/loglar", label: "Loglar", icon: <ScrollText {...iconProps} />, superAdminOnly: true },
