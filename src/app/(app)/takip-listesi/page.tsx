@@ -524,6 +524,7 @@ export default async function TakipListesiPage({
     { key: "tumu", label: "Tümü", count: leads.length },
   ];
   const aranacakCount = leads.filter((l) => l.status === "Aranacak").length;
+  const takipAramasiCount = leads.filter((l) => l.status === "TakipAramasi").length;
 
   return (
     <div>
@@ -635,6 +636,16 @@ export default async function TakipListesiPage({
             }`}
           >
             Aranacaklar <span className="opacity-70">({aranacakCount})</span>
+          </a>
+          <a
+            href={`/takip-listesi?tab=tumu&status=TakipAramasi${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+            className={`text-xs font-medium px-3 py-1.5 rounded-full border ${
+              activeStatus === "TakipAramasi"
+                ? "bg-brand-600 text-white border-brand-600"
+                : "bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100"
+            }`}
+          >
+            Takip Araması <span className="opacity-70">({takipAramasiCount})</span>
           </a>
         </div>
         <form className="flex-1 flex flex-wrap items-center gap-2">
