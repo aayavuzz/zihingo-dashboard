@@ -227,6 +227,19 @@ export default async function RandevularPage({
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4 text-xs text-slate-500">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-sm bg-violet-300 ring-1 ring-violet-500/30" />
+          Takip Listesi randevusu
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-sm bg-emerald-300 ring-1 ring-emerald-500/30" />
+          Serbest randevu
+        </span>
+        <span className="hidden sm:inline text-slate-300">·</span>
+        <span className="hidden sm:inline">Bir randevuya tıkla → düzenle</span>
+      </div>
+
       <div className="flex items-center justify-between gap-4 mb-5">
         <h1 className="text-[1.35rem] font-bold text-slate-900 tracking-tight">{title}</h1>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -290,8 +303,8 @@ export default async function RandevularPage({
 function ApptChip({ item, compact = false }: { item: ApptItem; compact?: boolean }) {
   const tone =
     item.source === "lead"
-      ? "bg-violet-50 text-violet-700 ring-violet-600/15 hover:bg-violet-100"
-      : "bg-brand-50 text-brand-700 ring-brand-600/15 hover:bg-brand-100";
+      ? "bg-violet-50 text-violet-700 ring-violet-600/20 hover:bg-violet-100"
+      : "bg-emerald-50 text-emerald-700 ring-emerald-600/20 hover:bg-emerald-100";
 
   return (
     <details className="relative group/appt">
