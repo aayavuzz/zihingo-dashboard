@@ -403,21 +403,21 @@ function LeadTable({
                   </div>
 
                   {l.notes.length > 0 && (
-                    <div className="space-y-2 mb-3">
+                    <div className="space-y-1.5 mb-3 max-w-3xl">
                       {l.notes.map((n) => (
                         <div
                           key={n.id}
-                          className="flex items-start gap-2.5 rounded-lg bg-white ring-1 ring-slate-200 px-3 py-2"
+                          className="group/note flex items-start gap-3 rounded-lg bg-white ring-1 ring-slate-200 px-3 py-2"
                         >
-                          <span className="text-[11px] font-medium text-brand-600 shrink-0 mt-0.5 w-20">
+                          <span className="text-[11px] font-medium text-brand-600 shrink-0 tabular-nums w-[5.5rem] pt-px">
                             {toTRDisplay(n.date)}
                           </span>
-                          <span className="flex-1 text-xs text-slate-700 whitespace-pre-wrap break-words min-w-0">
+                          <span className="flex-1 text-xs leading-relaxed text-slate-700 whitespace-pre-wrap break-words min-w-0">
                             {n.text}
                           </span>
                           <form action={deleteLeadNote.bind(null, n.id)} className="shrink-0">
                             <button
-                              className="text-[11px] text-slate-300 hover:text-rose-500"
+                              className="text-xs leading-none text-slate-300 hover:text-rose-500 opacity-0 group-hover/note:opacity-100 focus:opacity-100 transition-opacity"
                               title="Notu sil"
                             >
                               ✕
@@ -430,28 +430,32 @@ function LeadTable({
 
                   <form
                     action={addLeadNote.bind(null, l.id)}
-                    className="flex flex-col sm:flex-row sm:items-end gap-2"
+                    className="rounded-lg bg-white ring-1 ring-slate-200 p-3 max-w-3xl"
                   >
-                    <div className="sm:w-40 shrink-0">
-                      <label className={labelClass}>Tarih</label>
-                      <input
-                        type="date"
-                        name="date"
-                        defaultValue={todayISO}
-                        className={inputClass}
-                      />
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="sm:w-40 shrink-0">
+                        <label className={labelClass}>Tarih</label>
+                        <input
+                          type="date"
+                          name="date"
+                          defaultValue={todayISO}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <label className={labelClass}>Yeni not</label>
+                        <textarea
+                          name="text"
+                          rows={2}
+                          required
+                          placeholder="Görüşmede konuşulanlar..."
+                          className={`${inputClass} resize-y`}
+                        />
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <label className={labelClass}>Yeni not</label>
-                      <textarea
-                        name="text"
-                        rows={2}
-                        required
-                        placeholder="Görüşmede konuşulanlar..."
-                        className={`${inputClass} resize-y`}
-                      />
+                    <div className="flex justify-end mt-2.5">
+                      <Button variant="secondary">Not Ekle</Button>
                     </div>
-                    <Button variant="secondary">Not Ekle</Button>
                   </form>
                 </div>
 
