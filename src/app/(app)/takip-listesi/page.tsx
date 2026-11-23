@@ -1,7 +1,7 @@
 import { AlertTriangle, Baby, ChevronDown } from "lucide-react";
-import type { Lead } from "@prisma/client";
+import type { Lead, LeadNote } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { parseTurkeyDateTime } from "@/lib/time";
+import { parseTurkeyDateTime, turkeyDateStr } from "@/lib/time";
 import {
   Badge,
   badgeLabels,
@@ -14,7 +14,7 @@ import {
   inputClass,
   labelClass,
 } from "@/components/ui";
-import { createLead, deleteLead, updateLead } from "./actions";
+import { addLeadNote, createLead, deleteLead, deleteLeadNote, updateLead } from "./actions";
 import { LeadStatusFields } from "@/components/lead-status-fields";
 
 export const dynamic = "force-dynamic";
@@ -84,7 +84,17 @@ function toTRDisplay(dateStr?: string | null): string {
   return dateStr;
 }
 
-function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallFields?: boolean }) {
+type LeadWithNotes = Lead & { notes: LeadNote[] };
+
+function LeadTable({
+  leads,
+  showCallFields = false,
+}: {
+  leads: LeadWithNotes[];
+  showCallFields?: boolean;
+}) {
+  const todayISO = turkeyDateStr();
+
   if (leads.length === 0) {
     return (
       <Card>
@@ -199,8 +209,13 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
                       )
                     )}
                   </div>
-                  {l.note && (
-                    <div className="text-xs text-slate-400 truncate">{l.note}</div>
+                  {l.notes.length > 0 && (
+                    <div className="text-xs text-slate-400 truncate">
+                      {l.notes.length > 1 && (
+                        <span className="text-slate-300">({l.notes.length} not) </span>
+                      )}
+                      {l.notes[0].text}
+                    </div>
                   )}
                 </div>
 
@@ -262,8 +277,20 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
                       </span>
                     </>
                   )}
-                  <span className="text-slate-500 truncate" title={l.note ?? ""}>
-                    {l.note ?? "—"}
+                  <span
+                    className="text-slate-500 truncate"
+                    title={l.notes.map((n) => `${toTRDisplay(n.date)} — ${n.text}`).join("\n\n")}
+                  >
+                    {l.notes.length === 0 ? (
+                      "—"
+                    ) : (
+                      <>
+                        {l.notes.length > 1 && (
+                          <span className="text-slate-400">({l.notes.length}) </span>
+                        )}
+                        {l.notes[0].text}
+                      </>
+                    )}
                   </span>
                   <ChevronDown
                     size={16}
@@ -363,23 +390,73 @@ function LeadTable({ leads, showCallFields = false }: { leads: Lead[]; showCallF
                         className={inputClass}
                       />
                     </div>
-                    <div className="col-span-2 sm:col-span-4">
-                      <label className={labelClass}>Not</label>
-                      <textarea
-                        name="note"
-                        rows={4}
-                        defaultValue={l.note ?? ""}
-                        className={`${inputClass} resize-y min-h-24`}
-                      />
-                    </div>
                   </div>
                   <div className="flex items-center gap-3 pt-1">
                     <Button variant="primary">Kaydet</Button>
                     <LastEditedBy email={l.updatedByEmail} date={l.updatedAt} />
                   </div>
                 </form>
-                <form action={deleteLeadWithId} className="mt-3">
-                  <button className="text-xs text-rose-500 hover:underline">Sil</button>
+
+                <div className="mt-5 pt-4 border-t border-slate-200">
+                  <div className="text-xs font-semibold text-slate-600 mb-2">
+                    Notlar {l.notes.length > 0 && `(${l.notes.length})`}
+                  </div>
+
+                  {l.notes.length > 0 && (
+                    <div className="space-y-2 mb-3">
+                      {l.notes.map((n) => (
+                        <div
+                          key={n.id}
+                          className="flex items-start gap-2.5 rounded-lg bg-white ring-1 ring-slate-200 px-3 py-2"
+                        >
+                          <span className="text-[11px] font-medium text-brand-600 shrink-0 mt-0.5 w-20">
+                            {toTRDisplay(n.date)}
+                          </span>
+                          <span className="flex-1 text-xs text-slate-700 whitespace-pre-wrap break-words min-w-0">
+                            {n.text}
+                          </span>
+                          <form action={deleteLeadNote.bind(null, n.id)} className="shrink-0">
+                            <button
+                              className="text-[11px] text-slate-300 hover:text-rose-500"
+                              title="Notu sil"
+                            >
+                              ✕
+                            </button>
+                          </form>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <form
+                    action={addLeadNote.bind(null, l.id)}
+                    className="flex flex-col sm:flex-row sm:items-end gap-2"
+                  >
+                    <div className="sm:w-40 shrink-0">
+                      <label className={labelClass}>Tarih</label>
+                      <input
+                        type="date"
+                        name="date"
+                        defaultValue={todayISO}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <label className={labelClass}>Yeni not</label>
+                      <textarea
+                        name="text"
+                        rows={2}
+                        required
+                        placeholder="Görüşmede konuşulanlar..."
+                        className={`${inputClass} resize-y`}
+                      />
+                    </div>
+                    <Button variant="secondary">Not Ekle</Button>
+                  </form>
+                </div>
+
+                <form action={deleteLeadWithId} className="mt-4">
+                  <button className="text-xs text-rose-500 hover:underline">Talebi Sil</button>
                 </form>
               </div>
             </details>
@@ -406,9 +483,11 @@ export default async function TakipListesiPage({
             { contactName: { contains: q } },
             { studentName: { contains: q } },
             { phone: { contains: q } },
+            { notes: { some: { text: { contains: q } } } },
           ]
         : undefined,
     },
+    include: { notes: { orderBy: { date: "desc" } } },
     orderBy: { updatedAt: "desc" },
   });
 
@@ -497,9 +576,20 @@ export default async function TakipListesiPage({
                     <input type="date" name="appointmentDate" className={inputClass} />
                   </div>
                 </div>
-                <div>
-                  <label className={labelClass}>Not</label>
-                  <textarea name="note" rows={4} className={`${inputClass} resize-y min-h-24`} />
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className={labelClass}>Not Tarihi</label>
+                    <input
+                      type="date"
+                      name="noteDate"
+                      defaultValue={turkeyDateStr()}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className={labelClass}>Not</label>
+                    <textarea name="note" rows={3} className={`${inputClass} resize-y`} />
+                  </div>
                 </div>
                 <Button variant="primary" className="w-full">
                   Ekle

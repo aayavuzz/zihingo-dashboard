@@ -17,7 +17,8 @@ function num(formData: FormData, key: string) {
 
 export async function createLead(formData: FormData) {
   const contactName = str(formData, "contactName");
-  await prisma.lead.create({
+  const firstNote = str(formData, "note");
+  const lead = await prisma.lead.create({
     data: {
       type: str(formData, "type") ?? "Normal",
       contactName,
@@ -36,10 +37,21 @@ export async function createLead(formData: FormData) {
       callTime: str(formData, "callTime"),
       callReminderSentAt: null,
       callOverdueSentAt: null,
-      note: str(formData, "note"),
       updatedByEmail: await getActorEmail(),
     },
   });
+
+  if (firstNote) {
+    await prisma.leadNote.create({
+      data: {
+        leadId: lead.id,
+        date: str(formData, "noteDate") ?? new Date().toISOString().slice(0, 10),
+        text: firstNote,
+        createdByEmail: await getActorEmail(),
+      },
+    });
+  }
+
   await logAudit({ entity: "Lead", action: "create", label: contactName });
 
   revalidatePath("/takip-listesi");
@@ -67,12 +79,44 @@ export async function updateLead(id: string, formData: FormData) {
       callTime: str(formData, "callTime") ?? null,
       callReminderSentAt: null,
       callOverdueSentAt: null,
-      note: str(formData, "note") ?? null,
       updatedByEmail: await getActorEmail(),
     },
   });
   await logAudit({ entity: "Lead", action: "update", label: contactName });
 
+  revalidatePath("/takip-listesi");
+}
+
+export async function addLeadNote(leadId: string, formData: FormData) {
+  const text = str(formData, "text");
+  if (!text) return;
+
+  const date = str(formData, "date") ?? new Date().toISOString().slice(0, 10);
+  const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+
+  await prisma.leadNote.create({
+    data: { leadId, date, text, createdByEmail: await getActorEmail() },
+  });
+  await logAudit({
+    entity: "Lead",
+    action: "update",
+    label: `${lead?.contactName ?? "?"} · not eklendi (${date})`,
+  });
+
+  revalidatePath("/takip-listesi");
+}
+
+export async function deleteLeadNote(noteId: string) {
+  const note = await prisma.leadNote.findUnique({
+    where: { id: noteId },
+    include: { lead: true },
+  });
+  await prisma.leadNote.delete({ where: { id: noteId } });
+  await logAudit({
+    entity: "Lead",
+    action: "update",
+    label: note ? `${note.lead.contactName ?? "?"} · not silindi (${note.date})` : undefined,
+  });
   revalidatePath("/takip-listesi");
 }
 

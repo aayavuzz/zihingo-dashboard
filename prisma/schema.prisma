@@ -193,13 +193,26 @@ model Lead {
   callTime          String? // "Aranacak" durumunda planlanan arama saati
   callReminderSentAt DateTime? // arama saati yaklaşınca bildirim gönderildi mi
   callOverdueSentAt  DateTime? // arama saati geçince bildirim gönderildi mi
-  note              String?
+  note              String? // eski tek-not alanı; içeriği LeadNote'a taşındı, geçmiş veri için duruyor
+  notes             LeadNote[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   updatedByEmail    String?
 
   @@index([type])
   @@index([status])
+}
+
+model LeadNote {
+  id             String   @id @default(cuid())
+  leadId         String
+  lead           Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  date           String // YYYY-MM-DD — notun ait olduğu tarih (kullanıcı seçer)
+  text           String
+  createdAt      DateTime @default(now())
+  createdByEmail String?
+
+  @@index([leadId])
 }
 
 // rateType: "PerLesson" | "PerHour"
