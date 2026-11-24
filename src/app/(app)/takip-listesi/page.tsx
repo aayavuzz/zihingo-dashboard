@@ -89,11 +89,17 @@ type LeadWithNotes = Lead & { notes: LeadNote[] };
 function LeadTable({
   leads,
   showCallFields = false,
+  authorNames,
 }: {
   leads: LeadWithNotes[];
   showCallFields?: boolean;
+  authorNames: Map<string, string>;
 }) {
   const todayISO = turkeyDateStr();
+
+  // Notu yazanın adı: kullanıcı silinmiş/adı girilmemişse e-postaya düşer.
+  const authorLabel = (email?: string | null) =>
+    email ? (authorNames.get(email) ?? email) : null;
 
   if (leads.length === 0) {
     return (
@@ -409,8 +415,18 @@ function LeadTable({
                           key={n.id}
                           className="group/note flex items-start gap-3 rounded-lg bg-white ring-1 ring-slate-200 px-3 py-2"
                         >
-                          <span className="text-[11px] font-medium text-brand-600 shrink-0 tabular-nums w-[5.5rem] pt-px">
-                            {toTRDisplay(n.date)}
+                          <span className="shrink-0 w-28 pt-px">
+                            <span className="block text-[11px] font-medium text-brand-600 tabular-nums">
+                              {toTRDisplay(n.date)}
+                            </span>
+                            {authorLabel(n.createdByEmail) && (
+                              <span
+                                className="block text-[10px] text-slate-400 truncate"
+                                title={n.createdByEmail ?? ""}
+                              >
+                                {authorLabel(n.createdByEmail)}
+                              </span>
+                            )}
                           </span>
                           <span className="flex-1 text-xs leading-relaxed text-slate-700 whitespace-pre-wrap break-words min-w-0">
                             {n.text}
@@ -486,6 +502,11 @@ export default async function TakipListesiPage({
   const { tab, q, status } = await searchParams;
   const activeTab = tab ?? "acik";
   const activeStatus = status && status !== "all" ? status : undefined;
+
+  const users = await prisma.user.findMany({ select: { email: true, name: true } });
+  const authorNames = new Map(
+    users.filter((u) => u.name?.trim()).map((u) => [u.email, u.name!.trim()])
+  );
 
   const leads = await prisma.lead.findMany({
     where: {
@@ -676,18 +697,22 @@ export default async function TakipListesiPage({
 
       {showClosedDivider ? (
         <div className="space-y-6">
-          <LeadTable leads={openPart} />
+          <LeadTable leads={openPart} authorNames={authorNames} />
           {closedPart.length > 0 && (
             <div>
               <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 Kapananlar ({closedPart.length})
               </h2>
-              <LeadTable leads={closedPart} />
+              <LeadTable leads={closedPart} authorNames={authorNames} />
             </div>
           )}
         </div>
       ) : (
-        <LeadTable leads={filtered} showCallFields={activeStatus === "Aranacak"} />
+        <LeadTable
+          leads={filtered}
+          showCallFields={activeStatus === "Aranacak"}
+          authorNames={authorNames}
+        />
       )}
     </div>
   );
